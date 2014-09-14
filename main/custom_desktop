@@ -1,0 +1,247 @@
+#!/bin/bash
+cd $(dirname $0)
+if [ -f "/tmp/JLlock" ]; then
+echo -e "Sorry... another instance of this section is running....\n.......You need to finish that first....."
+read -t 5 -p "Do you want to force your way through..(y/n)?: " force
+if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
+echo ".....Exiting...."
+exit 1
+fi
+fi
+echo "1" > /tmp/JLlock
+maindir=$PWD
+yn="n"
+livedir=""
+timeout=`cat /usr/local/JLIVECD/main/timeout`
+if [[ $timeout =~ ^[\-0-9]+$ ]] && (( timeout > 0)); then
+  timeout=$timeout
+else
+  timeout=10
+fi
+if [ -f "$HOME/JLIVEdir" ]; then
+echo `cat $HOME/JLIVEdir` > dirn
+rm -f $HOME/JLIVEdir
+fi
+if [ -f "$HOME/JLIVEyn" ]; then
+echo `cat $HOME/JLIVEyn` > yn
+rm -f $HOME/JLIVEyn
+fi
+
+if [ -f "dirn" ]; then
+livedir=`cat dirn`
+fi
+if [ -f "yn" ]; then
+yn=`cat yn`
+fi
+rm -f yn
+c=1
+if [ "$yn" == "y" ]; then
+c=2
+cd $livedir
+isopath=`cat $HOME/JLIVEisopath`
+mount -o loop "$isopath".iso mnt
+rsync --exclude=/casper/filesystem.squashfs -a mnt/ extracted
+unsquashfs mnt/casper/filesystem.squashfs
+mv squashfs-root edit
+umount mnt
+fi
+cd $maindir
+while [ $c == 1 ]
+do
+if [ "$yn" != "y" ]; then
+echo "......If you just hit enter it will take your previous choice (if any)..."
+read -e -p "......Enter the directory path where you have saved your project: " livedir
+if [ "$livedir" == "" ]; then
+if [ -f "dirn" ]; then
+livedir=`cat dirn`
+echo "......Entering into directory: $livedir"
+fi
+elif [ -d "$livedir" ]; then
+rm -f dirn
+echo "$livedir" > dirn
+fi
+fi
+if [ "$livedir" != "" ]; then
+c=2
+else 
+c=1
+echo "......Invalid directory!"
+fi
+if [ -d "$livedir" ]; then
+c=2
+else
+c=1
+echo -e "......Directory doesn't exist!"
+fi
+done
+echo "......If you just hit enter it will take your previous choice (if any)"
+read -e -p "......Enter your desired (customized) cd/dvd name (without .iso): " cdname
+if [ "$cdname" == "" ]; then
+if [ -f "$livedir/disk" ]; then
+cdname=`cat $livedir/disk`
+echo "......Using previously used name: $cdname"
+else
+cdname="New-Disk"
+echo "******Using 'New-Disk' as cd/dvd name"
+fi
+fi
+rm -f "$livedir"/disk
+echo "$cdname" > "$livedir"/disk
+chmod 777 $livedir/disk
+##############################Copy some required files#####################################################################
+cp clean "$livedir"/edit/clean
+cp preparechroot "$livedir"/edit/prepare
+cp help "$livedir"/edit/help
+cd "$livedir"
+echo "......Entered into directory $livedir"
+##################### managing initrd################
+echo "......managing initrd......"
+if [ -f "extracted/casper/initrd.lz" ]; then
+initrd="initrd.lz"
+echo "......Found: $initrd"
+elif [ -f "extracted/casper/initrd.gz" ]; then
+initrd="initrd.gz"
+echo "......Found: extracted/casper/$initrd"
+else
+echo "......couldn't find initrd type....."
+read -e -p "Enter the name of initrd archive: " initrd
+fi
+rm -f edit/initrd
+echo $initrd > edit/initrd
+##############################Enable network connection####################################################################
+echo "......Preparing network connection for chroot....."
+cp /run/resolvconf/resolv.conf edit/run/resolvconf/
+cp /etc/hosts edit/etc/
+echo "......Network connection will be available in chroot....."
+##############################Debcache management########################################################################
+echo -e "......Debcache Management starting....\n......moving deb files to edit/var/cache/apt/archives......"
+cd "$livedir"
+if [ -d "debcache" ]; then
+echo dummy123456 > debcache/dummy123456.deb
+mv -f debcache/*.deb edit/var/cache/apt/archives
+echo -e ".......deb files moved......\n.......Debcache Management complete!......."
+fi
+##############################Create chroot environment and prepare it for use#############################################
+mount --bind /dev/ edit/dev
+echo "......Preparing the chroot terminal......"
+xhost +
+x-terminal-emulator -e chroot edit ./prepare
+echo -e "......Preparation complete! Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' to get help in chroot terminal......\n"
+x-terminal-emulator -e chroot edit
+xhost -
+##################################Debcache management############################################################
+echo -e "......Debcache Management starting......\n......Moving .deb files to debcache......"
+cd "$livedir"
+if [ ! -d "debcache" ]; then
+mkdir debcache
+fi
+echo dummy123456 > edit/var/cache/apt/archives/dummy123456.deb
+mv -f edit/var/cache/apt/archives/*.deb debcache
+echo -e "......deb files moved......\nDebcache Management complete!......"
+##################################Cleaning...#########################################
+/usr/local/JLIVECD/main/clean
+rm -f /tmp/JLlock
+if [ -f "edit/$initrd" ]; then
+mv edit/"$initrd" extracted/casper/
+else
+echo -e "\n......Assuming: you haven't modified the kernel modules or init scripts...."
+fi
+###############################Post Cleaning#####################################################################
+echo ".....Cleaning system...."
+rm -f edit/initrd
+rm -f edit/prepare
+rm -f edit/clean
+rm -f edit/help
+echo -e "\n......System Cleaned!....."
+##############################Checking for new installed kernel############################################################
+kerver=0
+if [ -f "extracted/casper/vmlinuz" ]; then
+vmlinuz="extracted/casper/vmlinuz"
+echo "......vmlinuz found: $vmlinuz"
+elif [ -f "extracted/casper/vmlinuz.efi" ]; then
+vmlinuz="extracted/casper/vmlinuz.efi"
+echo "......vmlinuz found: $vmlinuz"
+else
+echo "......Couldn't find vmlinuz!"
+read -e -p "......Enter the name for vmlinuz: " vmlinuz
+vmlinuz="extracted/casper/$vmlinuz"
+fi
+d=1
+ker=""
+echo -e "\n\n"
+read -t $timeout -p "......have you installed new kernel and want to boot the new kernel in live cd/dvd: (y/n)?: " ker
+if [ "$ker" != "y" ]; then
+if [ "$ker" != "Y" ]; then
+d=2
+fi
+fi
+while [ $d == 1 ]
+do
+read -e -p "......Enter the kernel version (take your time on this one): " kerver
+vmlinuz_path=edit/boot/vmlinuz-"$kerver"
+initrd_path=edit/boot/initrd.img-"$kerver"
+if [ -f "$vmlinuz_path" ]; then
+if [ -f "$initrd_path" ]; then
+cp edit/boot/vmlinuz-"$kerver" $vmlinuz
+cp edit/boot/initrd.img-"$kerver" extracted/casper/"$initrd"
+echo "......Rebuilding initrd...running....."
+mount --bind /dev/ edit/dev
+chroot edit mount -t proc none /proc
+chroot edit mount -t sysfs none /sys
+chroot edit mount -t devpts none /dev/pts
+chroot edit mkinitramfs -o /"$initrd" "$kerver"
+echo "......initrd rebuilt successfully!......"
+chroot edit umount /proc || chroot edit umount -lf /proc 
+chroot edit umount /sys
+chroot edit umount /dev/pts
+umount edit/dev || umount -lf edit/dev
+mv edit/"$initrd" extracted/casper/
+echo "......kernel updated successfully!"
+d=2
+else
+echo -e "......Couldn't find the specified kernel!\nEnter n to skip or enter the right version..."
+fi
+else
+echo -e "......Couldn't find the specified kernel!\nEnter n to skip or enter the right version..."
+fi
+if [ "$kerver" == "n" ]; then
+d=2
+elif [ "$kerver" == "N" ]; then
+d=2
+fi
+done
+echo "......Updating some required files..."
+###############################Create CD/DCD##############################################################################
+chmod +w extracted/casper/filesystem.manifest
+sudo -s <<EOF
+cd $livedir
+chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/casper/filesystem.manifest
+EOF
+cp extracted/casper/filesystem.manifest extracted/casper/filesystem.manifest-desktop
+sed -i '/ubiquity/d' extracted/casper/filesystem.manifest-desktop
+sed -i '/casper/d' extracted/casper/filesystem.manifest-desktop
+rm -f extracted/casper/filesystem.squashfs
+echo -e "\n......Deleted old filesystem.squashfs.."
+echo "......Rebuilding filesystem.squashfs.."
+mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
+#sudo mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
+#sudo mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
+printf $(sudo du -sx --block-size=1 edit | cut -f1) > extracted/casper/filesystem.size
+cd extracted
+echo "......Updating md5sums....."
+if [ -f "MD5SUMS" ]; then
+rm MD5SUMS
+find -type f -print0 | sudo xargs -0 md5sum | grep -v isolinux/boot.cat | sudo tee MD5SUMS
+fi
+if [ -f "md5sum.txt" ]; then
+rm md5sum.txt
+find -type f -print0 | sudo xargs -0 md5sum | grep -v isolinux/boot.cat | sudo tee md5sum.txt
+fi
+echo "......Creating the image......"
+mkisofs -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
+cd ..
+echo ".....Finalizing image....."
+chmod 777 "$cdname".iso
+echo -e "\n......Congratulations! Customized cd/dvd creation completed......."
+read -p ".......press enter to exit........." enter
+exit

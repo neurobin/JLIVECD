@@ -1,0 +1,38 @@
+#!/bin/bash
+cd $(dirname $0)
+if [ "$(id -u)" == "0" ]; then
+echo -e "......Sorry.....you need to run this as a normal user, not root....."
+exit 1
+fi
+maindir=$PWD
+c=1
+d=1
+while [ $c == 1 ]
+do
+c=2
+read -e -p "......Where do you want to save your project ?.....choose a directory where you have full permission)..Enter path: " livedir
+mkdir $livedir
+if [ ! -d "$livedir" ]; then
+c=1
+echo ".....Invalid directory name/path!"
+fi
+done
+cd "$livedir"
+mkdir mnt
+while [ $d == 1 ]
+do
+d=2
+read -e -p "......Enter the path to your base iso image (without .iso): " isopath
+if [ ! -f "$isopath.iso" ]; then
+d=1
+echo "......Couldn't found the iso"
+else
+echo "......Found iso: $isopath.iso"
+echo $isopath > $HOME/JLIVEisopath
+fi
+done
+mkdir extracted
+rm -f "$HOME/JLIVEdir"
+rm -f "$HOME/JLIVEyn"
+echo "$livedir" > "$HOME/JLIVEdir"
+echo y > $HOME/JLIVEyn

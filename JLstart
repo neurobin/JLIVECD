@@ -1,0 +1,14 @@
+#!/bin/bash
+cd $(dirname $0)
+if [ "$(id -u)" == "0" ]; then
+echo -e ".....Run this as a normal user, not root....."
+exit 1
+fi
+cd /usr/local/JLIVECD
+read -p "Is this a fresh start: (y/n)?" control
+if [ "$control" == "y" ]; then
+./main/fresh_start
+elif [ "$control" == "Y" ]; then
+./main/fresh_start
+fi
+sudo ./main/custom_desktop
