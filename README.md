@@ -79,7 +79,7 @@ Follow the following link for bug report:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-4.If you are not able to get connected in chroot then you can try running the code: JLRefreshNetwork in another terminal in your main system. This may be caused, if you have started JLIVECD before connecting you pc to the internet.
+4.If you are not able to get connected in chroot then you can try running the code: JLRefreshNetwork in another terminal in your main system. This may happen, if you have started JLIVECD before connecting you pc to the internet.
 
 5.If you want to change the timeout value then run this code in another terminal in your main system:
 
