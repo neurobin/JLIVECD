@@ -15,7 +15,10 @@ You're free to use the softwares without renaming those, as they are licensed un
 The name and identity elements of a distro are trademarked and copyrighted. Unless you have approval from appropriate authorization you can't use those (identity elements and name).
 *************************************************************************************************************************
 
-
+What this is about:
+-------------------
+This is a simple command line tool to customize live cd/dvd of ubuntu based distros, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
+https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
 
 
 Requirements:
@@ -39,6 +42,7 @@ How to use:
 
 Run JLstart in a terminal or run it from menu->system->JLIVECD
 
+N.B: This does no modification on it's own. you need to modify the iso images on your own. It only renders an environment fod modification and finally creates the modified iso image. And of course, you need an iso image as base as no other image or archive will work with this tool.
 
 Example:
 
