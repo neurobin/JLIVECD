@@ -95,3 +95,7 @@ sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
 Source Link:
 -----------
 https://github.com/mdjahidulhamid/JLIVECD
+
+Web page:
+---------
+http://mdjahidulhamid.github.io/JLIVECD/
