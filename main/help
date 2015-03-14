@@ -1,0 +1,42 @@
+**************************************************************
+.............This is the chroot terminal. Use it to modify your live system......
+..............................Hints..............................
+.............Copy your downloaded .deb packages to /var/cache/apt/archives/
+......To update the repository:		apt-get update
+......To upgrade the software packages:	apt-get upgrade
+......To install a software/package:	apt-get install package_name
+......To reinstall a software/package:	apt-get install --reinstall package_name
+......To install from a .deb file: 	dpkg -i package_name.deb
+......To install from install.sh file:	./install.sh 	or path_to_the_file.sh
+......To install form a file install:	./install
+......To install from configure make: 	./configure && make && make install
+......To add a ppa:			add-apt-repository ppa
+......After adding all ppa:		apt-get update
+
+
+......To remove a software:		apt-get remove package_name
+......To completely remove a software: 	apt-get purge package_name
+......To remove a ppa:			add-apt-repository --remove ppa
+......After removing ppa:		apt-get update
+
+......To remove softwares installed by other means rather than apt-get, aptitude or dpkg, delete the corresponding folders/files.
+......To view installed packages run:
+dpkg-query -W --showformat='${Installed-Size}\t${Package}\n' | sort -nr | less
+or run:
+dpkg --get-selections | grep -v deinstall
+
+.............After you have done with your modification run:
+                         exit 
+.............or simply close this terminal...................
+****************************************************************                
+
+.........................Links...........................
+For more info on installing softwares visit: 
+http://community.linuxmint.com/tutorial/view/1525
+For info on creating menu entry for your installed software (if it doesn't have any by default) visit:
+http://community.linuxmint.com/tutorial/view/1504
+For learning the basics of customizing live cd/dvd visit:
+http://community.linuxmint.com/tutorial/view/1784
+https://help.ubuntu.com/community/LiveCDCustomization
+
+****************************************************************

@@ -1,0 +1,15 @@
+#!/bin/bash
+cd $(dirname $0)
+if [ -f "/usr/local/JLIVECD/main/dirn" ]; then
+livedir=`cat /usr/local/JLIVECD/main/dirn`
+else
+echo "........May be this your fresh start, run JLstart instead.........."
+exit 1
+fi
+cd $livdedir
+echo "......Preparing network connection for chroot in $livedir....."
+sudo cp /run/resolvconf/resolv.conf edit/run/resolvconf/
+sudo cp /etc/hosts edit/etc/
+sudo chroot edit ln -sf /run/resolvconf/resolv.conf /etc/
+echo "......Network connection shlould be available in chroot now....."
+
