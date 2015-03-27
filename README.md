@@ -69,7 +69,7 @@ Things to care:
 
 Change Logs:
 -----------
-#version 2.0:
+###version 2.0:
 
 1.You can use short cut in names for path to base iso i.e xubuntu for xubuntu-14.04.1-x64.iso, if there is no other file named "xubuntu" in the same folder. You can even use only x if there is no other file starting with x in the same folder.
 
