@@ -12,14 +12,14 @@ do
 c=2
 read -e -p "......Where do you want to save your project ?.....choose a directory where you have full permission)..Enter path: " livedir
 livedir=${livedir/\~/$HOME}
-[ -d $livedir ]; echo "***$livedir Exists, Contents will be overwritten***" || mkdir $livedir
+[ -d $livedir ] && echo "***$livedir Exists, Contents will be overwritten***" || mkdir $livedir
 if [ ! -d "$livedir" ]; then
 c=1
 echo ".....Invalid directory name/path!"
 fi
 done
 cd "$livedir"
-[ -d mnt ]; echo "***$livedir/mnt Exists, Contents will be overwritten***" || mkdir mnt
+[ -d mnt ] && echo "***$livedir/mnt Exists, Contents will be overwritten***" || mkdir mnt
 while [ $d == 1 ]
 do
 d=2
@@ -33,7 +33,7 @@ echo "......Found iso: ${isopath[@]}.iso"
 echo "${isopath[@]}" > $HOME/JLIVEisopath
 fi
 done
-[ -d extracted ]; echo "***$livedir/extracted Exists, Contents will be overwritten***" || mkdir extracted
+[ -d extracted ] && echo "***$livedir/extracted Exists, Contents will be overwritten***" || mkdir extracted
 rm -f "$HOME/JLIVEdir"
 rm -f "$HOME/JLIVEyn"
 echo "$livedir" > "$HOME/JLIVEdir"
