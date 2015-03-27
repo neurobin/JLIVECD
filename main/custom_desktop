@@ -2,7 +2,7 @@
 cd $(dirname $0)
 if [ -f "/tmp/JLlock" ]; then
 echo -e "Sorry... another instance of this section is running\n Or premature shutdown detected from a previous run....\n.......You need to finish that first or force your way through....."
-read -t 5 -p "Do you want to force your way through..(y/n)?: " force
+read -t 7 -p "Do you want to force your way through..(y/n)?: " force
 if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
 echo ".....Exiting...."
 exit 1
@@ -212,7 +212,7 @@ d=2
 fi
 done
 echo "......Updating some required files..."
-###############################Create CD/DCD##############################################################################
+###############################Create CD/DVD##############################################################################
 chmod +w extracted/casper/filesystem.manifest
 sudo -s <<EOF
 cd $livedir
