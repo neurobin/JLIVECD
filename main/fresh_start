@@ -12,28 +12,39 @@ do
 c=2
 read -e -p "......Where do you want to save your project ?.....choose a directory where you have full permission)..Enter path: " livedir
 livedir=${livedir/\~/$HOME}
-[ -d $livedir ]; echo "***$livedir Exists, Contents will be overwritten***" || mkdir $livedir
+[ -d $livedir ] && echo "***$livedir Exists, Content will be overwritten***" || mkdir $livedir
 if [ ! -d "$livedir" ]; then
 c=1
-echo ".....Invalid directory name/path!"
+echo -e "\n.....Invalid directory name/path!"
 fi
 done
 cd "$livedir"
-[ -d mnt ]; echo "***$livedir/mnt Exists, Contents will be overwritten***" || mkdir mnt
+[ -d mnt ] && echo "***$livedir/mnt Exists, Content will be overwritten***" || mkdir mnt
 while [ $d == 1 ]
 do
 d=2
-read -e -p "......Enter the path to your base iso image (without .iso): " isopath
+read -e -p "......Enter the path to your base iso image: " isopath
 isopath=${isopath/\~/$HOME}
-if [ ! -f "${isopath[@]}.iso" ]; then
-d=1
-echo "......Couldn't find the iso"
+isofullpath=("${isopath[@]}"*)
+if [ -f "$isofullpath" ]; then
+iso=`tail -c 5 <<< "$isofullpath"`
+iso=${iso,,}
+if [ "$iso" == ".iso" ]; then
+echo -e "\n......Found iso: $isofullpath"
+echo $isofullpath > $HOME/JLIVEisopath
 else
-echo "......Found iso: ${isopath[@]}.iso"
-echo "${isopath[@]}" > $HOME/JLIVEisopath
+d=1
+echo -e "\n.......Selected file isn't an ISO image......"
+fi 
+elif [ -f "$isofullpath.iso" ]; then
+echo -e "\n......Found iso: $isofullpath.iso"
+echo $isofullpath.iso > $HOME/JLIVEisopath
+else
+d=1
+echo -e "\n......Couldn't find the iso"
 fi
 done
-[ -d extracted ]; echo "***$livedir/extracted Exists, Contents will be overwritten***" || mkdir extracted
+[ -d extracted ] && echo -e "\n***$livedir/extracted Exists, Content will be overwritten***" || mkdir extracted
 rm -f "$HOME/JLIVEdir"
 rm -f "$HOME/JLIVEyn"
 echo "$livedir" > "$HOME/JLIVEdir"
