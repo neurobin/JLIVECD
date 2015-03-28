@@ -1,5 +1,6 @@
 #!/bin/bash
-cd $(dirname $0)
+BASEDIR=`dirname "${0}"`
+cd "$BASEDIR"
 if [ -f "/tmp/JLlock" ]; then
 echo -e "\nSorry... another instance of this section is running\n Or premature shutdown detected from a previous run....\n.......You need to finish that first or force your way through....."
 read -t 7 -p "Do you want to force your way through..(y/n)?: " force
