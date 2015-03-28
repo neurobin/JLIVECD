@@ -1,5 +1,6 @@
 #!/bin/bash
-cd $(dirname $0)
+BASEDIR=`dirname "${0}"`
+cd "$BASEDIR"
 kerver=$(uname -r)
 livedir=`cat /usr/local/JLIVECD/main/dirn`
 timeout=`cat /usr/local/JLIVECD/main/timeout`
