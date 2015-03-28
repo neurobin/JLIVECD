@@ -1,5 +1,6 @@
 #!/bin/bash
-cd $(dirname $0)
+BASEDIR=`dirname "${0}"`
+cd "$BASEDIR"
 if [ "$(id -u)" == "0" ]; then
 echo -e "......Sorry.....you need to run this as a normal user, not root....."
 exit 1
