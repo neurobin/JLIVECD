@@ -135,11 +135,11 @@ I call it debcache management!
 
 Source Link:
 -----------
-https://github.com/mdjahidulhamid/JLIVECD
+https://github.com/neurobin/JLIVECD
 
 Web page:
 ---------
-http://mdjahidulhamid.github.io/JLIVECD/
+http://neurobin.github.io/JLIVECD/
 
 Facebook Page:
 --------------
