@@ -1,5 +1,4 @@
-BASEDIR=`dirname "${0}"`
-cd "$BASEDIR"
+cd "$(dirname "$0")"
 sudo chmod -R 755 *
 sudo rm -rf /usr/local/JLIVECD
 sudo mkdir -p /usr/local/JLIVECD
