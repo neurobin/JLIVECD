@@ -1,5 +1,5 @@
 #!/bin/bash
-BASEDIR=`dirname "${0}"`
+BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 if [ -f "/tmp/JLlock" ]; then
 echo -e "\nSorry... another instance of this section is running\n Or premature shutdown detected from a previous run....\n.......You need to finish that first or force your way through....."

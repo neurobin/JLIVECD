@@ -1,5 +1,5 @@
 #!/bin/bash
-BASEDIR=`dirname "${0}"`
+BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 if [ -f "/usr/local/JLIVECD/main/dirn" ]; then
 livedir=`cat /usr/local/JLIVECD/main/dirn`

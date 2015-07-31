@@ -1,5 +1,5 @@
 #!/bin/bash
-BASEDIR=`dirname "${0}"`
+BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 if [ "$(id -u)" == "0" ]; then
 echo -e "......Sorry.....you need to run this as a normal user, not root....."

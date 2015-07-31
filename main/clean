@@ -1,5 +1,5 @@
 #!/bin/bash
-BASEDIR=`dirname "${0}"`
+BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 kerver=$(uname -r)
 livedir=`cat /usr/local/JLIVECD/main/dirn`
