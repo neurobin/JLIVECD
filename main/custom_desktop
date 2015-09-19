@@ -145,7 +145,16 @@ echo -e "\n......Preparing the chroot terminal......"
 xhost +
 x-terminal-emulator -e chroot edit ./prepare
 echo -e "\n......Preparation complete! Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' to get help in chroot terminal......\n"
-x-terminal-emulator -e chroot edit
+x-terminal-emulator -e chroot edit || { 
+echo "......Failed to run x-terminal-emulator. Check if x-terminal-emulator link exists and not broken"
+read -e -p "Want to continue without chroot (Y/n)?: " choice1
+if [[ $choice1 =~ [Yy] ]];then
+echo "......Continuing without chroot. No modification will be done"
+else
+echo "......Running x-terminal-emulator failed. Exiting..."
+exit 2
+fi
+}
 xhost -
 ##################################Debcache management############################################################
 echo -e "\n......Debcache Management starting......\n......Moving .deb files to debcache......"
