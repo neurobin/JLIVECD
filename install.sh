@@ -1,4 +1,4 @@
-cd $(dirname $0)
+cd "$(dirname "$BASH_SOURCE")"
 sudo chmod -R 755 *
 sudo rm -rf /usr/local/JLIVECD
 sudo mkdir -p /usr/local/JLIVECD
