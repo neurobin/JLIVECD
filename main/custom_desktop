@@ -143,9 +143,9 @@ fi
 mount --bind /dev/ edit/dev
 echo -e "\n......Preparing the chroot terminal......"
 xhost +
-x-terminal-emulator -e chroot edit ./prepare
-echo -e "\n......Preparation complete! Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' to get help in chroot terminal......\n"
-x-terminal-emulator -e chroot edit || { 
+x-terminal-emulator -e "bash -c \"chroot edit ./prepare\"" || { echo "------Preparing chroot failed-----"; }
+echo -e "\n......Preparation complete! Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
+x-terminal-emulator -e "bash -c \"chroot ./edit;exec bash\"" || { 
 echo "......Failed to run x-terminal-emulator. Check if x-terminal-emulator link exists and not broken"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1
 if [[ $choice1 =~ [Yy] ]];then
