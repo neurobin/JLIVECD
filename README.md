@@ -20,6 +20,14 @@ What this is about:
 This is a simple command line tool to customize live cd/dvd of ubuntu based distros, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
 https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
 
+Features:
+---------
+
+1. You can save your project in a suitable directory and keep adding and changing things while checking the ISOs' built on those changes.
+2. Your changes are always saved. You can resume it whenever you like.
+3. It remembers your previous choice (the project directory, the desired ISO name and the original ISO path). Just hit <kbd>Enter</kbd> when you are prompt for input in such cases.
+4. You only need to give it the original ISO once, every time after that, you can just go to the chroot terminal and keep customizing things.
+
 
 Requirements:
 ------------
@@ -55,7 +63,21 @@ Is this a fresh start: (y/n)?n
 ...............................
 
 
-Hints are given on the go, follow them to successfully create a customized live cd/dvd
+Hints are given on the go, follow them to successfully create a customized live cd/dvd.
+
+Directories & Files:
+--------------------
+
+1. In your project directory, you will find some default directories. Don't change their names. The directories are:
+
+ 1. debcache: .deb files are kept here. See debcache management for more details.
+ 2. edit: This is the root filesystem (i.e /) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
+ 3. extracted: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
+ 4. mnt: A directory used only for mounting ISO image.
+ 
+2. There's also an additional file named disk, which contains the target ISO name. You can edit this file to edit the name. Dont' delete it though.
+
+
 
 Things to care:
 ---------------
@@ -67,7 +89,13 @@ Things to care:
 
 2.Don't use spaces in project path.
 
-Change Logs:
+3.In a fresh start, don't close the terminal when it is extracting the original ISO. You can close it safely after it finishes extracting and the chroot is closed and another prompt for input is appeared.
+
+4.Don't close the chroot and host terminal simultaneously. You can close the host terminal safely after an input prompt appears after closing the chroot terminal.
+
+5.The default answer is `no` for all `yes/no` type questions. 
+
+ChangeLog:
 -----------
 ###version 2.0:
 
@@ -109,9 +137,42 @@ Follow the following link for bug report:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-4.If you are not able to get connected to internet in chroot then you can try running the code: JLRefreshNetwork in another terminal in your main system. This may happen, if you have started JLIVECD before connecting your pc to the internet.
+4.In Ubuntu 14.04 Gnome LTS you might encounter two more bugs: 
 
-5.If you want to change the timeout value then run this code in another terminal in your main system:
+One should be solved by editing:
+
+```
+/var/lib/dpkg/info/whoopsie.prerm
+/var/lib/dpkg/info/libpam-systemd\:amd64.prerm
+/var/lib/dpkg/info/libpam-systemd\:amd64.postinst
+```
+
+(change `exit $?` to `exit 0` in the invoke-rc.d lines)
+
+Other one should be solved by editing:
+
+```
+/etc/kernel/postrm.d/zz-update-grub
+/etc/kernel/postinst.d/zz-update-grub
+```
+
+find the following and comment out the if an fi line: 
+
+```
+if [ -e /boot/grub/grub.cfg ]; then
+   #exec update-grub
+fi
+```
+
+Revert these changes before exiting the chroot.
+
+Follow the following link for bug report for more details:
+
+https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
+
+5.If you are not able to get connected to internet in chroot then you can try running the code: JLRefreshNetwork in another terminal in your main system. This may happen, if you have started JLIVECD before connecting your pc to the internet.
+
+6.If you want to change the timeout value then run this code in another terminal in your main system:
 
 sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
 
@@ -140,7 +201,3 @@ https://github.com/neurobin/JLIVECD
 Web page:
 ---------
 http://neurobin.github.io/JLIVECD/
-
-Facebook Page:
---------------
-https://www.facebook.com/pages/JCode/1513497505602572
