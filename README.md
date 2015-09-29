@@ -38,22 +38,25 @@ Requirements:
 
 install requirements by:
 
+```
 sudo apt-get install squashfs-tools genisoimage
+```
 
 Installation:
 ------------
 
-give the install.sh file execution permission and run it in terminal
+give the `install.sh` file execution permission and run it in terminal.
 
 How to use:
 ----------
 
-Run JLstart in a terminal or run it from menu->system->JLIVECD
+Run `JLstart` in a terminal or run it from menu->system->JLIVECD.
 
 N.B: This does no modification on it's own. you need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image. And of course, you need an iso image as base as no other image or archive will work with this tool.
 
 Example:
 
+```
 ~$ JLstart
 
 Is this a fresh start: (y/n)?n
@@ -61,7 +64,7 @@ Is this a fresh start: (y/n)?n
 [sudo] password for user:
 
 ...............................
-
+```
 
 Hints are given on the go, follow them to successfully create a customized live cd/dvd.
 
@@ -70,12 +73,12 @@ Directories & Files:
 
 1. In your project directory, you will find some default directories. Don't change their names. The directories are:
 
- 1. debcache: .deb files are kept here. See debcache management for more details.
- 2. edit: This is the root filesystem (i.e /) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
- 3. extracted: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
- 4. mnt: A directory used only for mounting ISO image.
+ 1. `debcache`: `.deb` files are kept here. See the special feature section for more details.
+ 2. `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
+ 3. `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
+ 4. `mnt`: A directory used only for mounting ISO image.
  
-2. There's also an additional file named disk, which contains the target ISO name. You can edit this file to edit the name. Dont' delete it though.
+2. There's also an additional file named `disk`, which contains the target ISO name. You can edit this file to edit the name. Dont' delete it though.
 
 
 
@@ -83,9 +86,9 @@ Things to care:
 ---------------
 1.Don't use quotation in file/folder path
 
-~/"some folder" or "~/some folder" is invalid
+`~/"some folder"` or `"~/some folder"` is invalid
 
-~/some folder is valid
+`~/some folder` is valid
 
 2.Don't use spaces in project path.
 
@@ -103,11 +106,13 @@ ChangeLog:
 
 Example:
 
+```
 enter base iso path: ~/Downloads/x
+```
 
 As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will take that file as input automatically.
 
-2.You can use full path wih or without .iso
+2.You can use full path with or without `.iso`.
 
 
 
@@ -124,14 +129,16 @@ Tested OS:
 Additonal info:
 --------------
 
-1.In Linux Mint 17 XFCE there's a bug. To fix this edit /usr/sbin/invoke-rc.d file (in chroot) as:
-replace exit 100 with exit 0 at line 285 and 421, then apply upgrade. after upgrading revert this modification (must).
+1.In Linux Mint 17 XFCE there's a bug. To fix this edit `/usr/sbin/invoke-rc.d` file (in chroot) as:
+replace `exit 100` with `exit 0` at line `285` and `421`, then apply upgrade. after upgrading revert this modification (must).
 
-2.In Linux Mint 17 xfce, if you install nautilus then it will set gnome-session as default session and if gnome desktop is not installed then no desktop window will show up in live session. change the link /usr/bin/x-session-manager to point to /usr/bin/xfce4-session
+2.In Linux Mint 17 xfce, if you install nautilus then it will set gnome-session as default session and if gnome desktop is not installed then no desktop window will show up in live session. change the link `/usr/bin/x-session-manager` to point to `/usr/bin/xfce4-session`.
 
 3.In xubuntu 14.04.1 there's another bug: Can't open /scripts/casper-functions" error) to fix this, run this code in chroot:
 
+```
 ln -s /usr/share/initramfs-tools/scripts /scripts
+```
 
 Follow the following link for bug report:
 
@@ -170,13 +177,19 @@ Follow the following link for bug report for more details:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-5.If you are not able to get connected to internet in chroot then you can try running the code: JLRefreshNetwork in another terminal in your main system. This may happen, if you have started JLIVECD before connecting your pc to the internet.
+5.If you are not able to get connected to internet in chroot then you can try running the code: `JLRefreshNetwork` in another terminal in your main system. This may happen, if you have started JLIVECD before connecting your pc to the internet.
 
 6.If you want to change the timeout value then run this code in another terminal in your main system:
 
+```
 sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
+```
 
-"timeout_value" should be replaced with your desired time in seconds (ex: 12)
+"timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout:
+
+```
+sudo echo 12 > /usr/local/JLIVECD/main/timeout
+```
 
 Special Feature:
 ----------------
