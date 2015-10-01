@@ -250,8 +250,8 @@ sed -i '/casper/d' extracted/casper/filesystem.manifest-desktop
 rm -f extracted/casper/filesystem.squashfs
 echo -e "\n......Deleted old filesystem.squashfs.."
 echo -e "\n......Rebuilding filesystem.squashfs.."
-mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
-#sudo mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
+mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
+#mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
 #sudo mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
 printf $(sudo du -sx --block-size=1 edit | cut -f1) > extracted/casper/filesystem.size
 cd extracted

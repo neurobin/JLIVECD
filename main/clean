@@ -28,6 +28,8 @@ read -t $timeout -p "Want to retain edit/home directory? (y/n)?: " home
 if [ "$home" != "y" ] && [ "$home" != "Y" ]; then
 rm -rf edit/home/*
 echo "........edit/home cleaned!......"
+else
+echo "........edit/home kept as it is......."
 fi
 echo "\n......initrd archive type: $initrd detected!"
 echo -e "\n\n.....................Rebuilding initrd!....................\n.......this step is needed if you have modified the kernel module, or init scripts......\n......If you have installed new kernel and want to boot that kernel then skip this for now.....\n"
