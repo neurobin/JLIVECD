@@ -37,31 +37,31 @@ echo -e "\n\n.....................Rebuilding initrd!....................\n......
 read -t $timeout -p "......have you modified init script or kernel module? (y/n)?: " choice
 c=1
 if [ "$choice" != "y" ]; then
-if [ "$choice" != "Y" ]; then
-c=2
-fi
+  if [ "$choice" != "Y" ]; then
+    c=2
+  fi
 fi
 while [ $c == 1 ]
 do
-if [ -d "edit/lib/modules/$kerver" ]; then
-echo "......Rebuilding initrd...running....."
-mount --bind /dev/ edit/dev
-chroot edit mount -t proc none /proc
-chroot edit mount -t sysfs none /sys
-chroot edit mount -t devpts none /dev/pts
-chroot edit mkinitramfs -o /"$initrd" "$kerver"
-echo "......initrd rebuilt successfully!......"
-chroot edit umount /proc || chroot edit umount -lf /proc 
-chroot edit umount /sys
-chroot edit umount /dev/pts
-umount edit/dev || umount -lf edit/dev
-c=2
-else
-read -e -p ".......Enter live system kernel version (n to skip/default, take your time on this one): " kerver
-fi
-if [ "$kerver" == "n" ]; then
-c=2
-elif [ "$kerver" == "N" ]; then
-c=2
-fi
+  if [ -d "edit/lib/modules/$kerver" ]; then
+    echo "......Rebuilding initrd...running....."
+    mount --bind /dev/ edit/dev
+    chroot edit mount -t proc none /proc
+    chroot edit mount -t sysfs none /sys
+    chroot edit mount -t devpts none /dev/pts
+    chroot edit mkinitramfs -o /"$initrd" "$kerver"
+    echo "......initrd rebuilt successfully!......"
+    chroot edit umount /proc || chroot edit umount -lf /proc 
+    chroot edit umount /sys
+    chroot edit umount /dev/pts
+    umount edit/dev || umount -lf edit/dev
+    c=2
+  else
+    read -e -p ".......Enter live system kernel version (n to skip/default, take your time on this one): " kerver
+  fi
+  if [ "$kerver" == "n" ]; then
+    c=2
+  elif [ "$kerver" == "N" ]; then
+    c=2
+  fi
 done
