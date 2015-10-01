@@ -272,3 +272,4 @@ chmod 777 "$cdname".iso
 echo -e "\n......Congratulations! Customized cd/dvd creation completed......."
 read -p ".......press enter to exit........." enter
 exit
+

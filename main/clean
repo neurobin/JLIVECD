@@ -65,4 +65,3 @@ elif [ "$kerver" == "N" ]; then
 c=2
 fi
 done
-
