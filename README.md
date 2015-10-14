@@ -190,6 +190,18 @@ sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
 ```
 sudo echo 12 > /usr/local/JLIVECD/main/timeout
 ```
+7.Ubiquity installer, hang/freeze on harddisk detection. This bug is easily solved: you must edit file /usr/share/applications/ubiquity-gtkui.desktop and change the section "exex" from
+
+```
+sh -c 'ubiquity gtk_ui'
+```
+
+to 
+
+```
+sh -c 'sudo ubiquity gtk_ui'
+```
+
 
 Special Feature:
 ----------------
