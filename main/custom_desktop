@@ -10,35 +10,35 @@ if [ -f "/tmp/JLlock" ]; then
   fi
 fi
 echo "1" > /tmp/JLlock
-maindir=$PWD
+maindir="$PWD"
 yn="n"
 livedir=""
-timeout=`cat /usr/local/JLIVECD/main/timeout`
+timeout="$(cat /usr/local/JLIVECD/main/timeout)"
 if [[ $timeout =~ ^[\-0-9]+$ ]] && (( timeout > 0)); then
   timeout=$timeout
 else
   timeout=10
 fi
 if [ -f "$HOME/JLIVEdir" ]; then
-  echo `cat $HOME/JLIVEdir` > dirn
-  rm -f $HOME/JLIVEdir
+  echo "$(cat $HOME/JLIVEdir)" > dirn
+  rm -f "$HOME"/JLIVEdir
 fi
 if [ -f "$HOME/JLIVEyn" ]; then
-  echo `cat $HOME/JLIVEyn` > yn
-  rm -f $HOME/JLIVEyn
+  echo "$(cat $HOME/JLIVEyn)" > yn
+  rm -f "$HOME"/JLIVEyn
 fi
 if [ -f "dirn" ]; then
-  livedir=`cat dirn`
+  livedir="$(cat dirn)"
 fi
 if [ -f "yn" ]; then
-  yn=`cat yn`
+  yn="$(cat yn)"
 fi
 rm -f yn
 c=1
 if [ "$yn" == "y" ]; then
   c=2
-  cd $livedir
-  isopath=`cat $HOME/JLIVEisopath`
+  cd "$livedir"
+  isopath="$(cat $HOME/JLIVEisopath)"
   if [ -d edit ]; then
     echo -e "\n***Seems this wasn't really a fresh start (edit directory exists)***,\n***existing files will be overwritten!!!***\n if you aren't sure what this warning is about, close this terminal and run again.If this is shown again, enter y and continue..."
     read -p ".......Are you sure, you want to continue (y/n)?: " cont
@@ -55,16 +55,16 @@ if [ "$yn" == "y" ]; then
   mv squashfs-root edit
   umount mnt
 fi
-cd $maindir
+cd "$maindir"
 while [ $c == 1 ]
 do
   if [ "$yn" != "y" ]; then
     echo -e "\n......If you just hit enter it will take your previous choice (if any)..."
     read -e -p "......Enter the directory path where you have saved your project: " livedir
-    livedir=${livedir/\~/$HOME}
+    livedir="${livedir/\~/$HOME}"
     if [ "$livedir" == "" ]; then
       if [ -f "dirn" ]; then
-        livedir=`cat dirn`
+        livedir="$(cat dirn)"
         echo -e "\n......Entering into directory: $livedir"
       fi
     elif [ -d "$livedir" ]; then
@@ -87,14 +87,14 @@ do
 done
 echo -e "\n......If you just hit enter it will take your previous choice (if any)"
 read -e -p "......Enter your desired (customized) cd/dvd name: " cdname
-iso=`tail -c 5 <<< "$isofullpath"`
-iso=${iso,,}
+iso="$(tail -c 5 <<< "$isofullpath")"
+iso="${iso,,}"
 if [ "$iso" == ".iso" ]; then
-  cdname=${cdname:0:${#cdname}-4}
+  cdname="${cdname:0:${#cdname}-4}"
 fi
 if [ "$cdname" == "" ]; then
   if [ -f "$livedir/disk" ]; then
-    cdname=`cat $livedir/disk`
+    cdname="$(cat "$livedir"/disk)"
     echo -e "\n......Using previously used name: $cdname"
   else
     cdname="New-Disk"
@@ -103,7 +103,7 @@ if [ "$cdname" == "" ]; then
 fi
 rm -f "$livedir"/disk
 echo "$cdname" > "$livedir"/disk
-chmod 777 $livedir/disk
+chmod 777 "$livedir"/disk
 ##############################Copy some required files#####################################################################
 cp clean "$livedir"/edit/clean
 cp preparechroot "$livedir"/edit/prepare
@@ -123,7 +123,7 @@ else
   read -e -p "Enter the name of initrd archive: " initrd
 fi
 rm -f edit/initrd
-echo $initrd > edit/initrd
+echo "$initrd" > edit/initrd
 ##############################Enable network connection####################################################################
 echo -e "\n......Preparing network connection for chroot....."
 cp /run/resolvconf/resolv.conf edit/run/resolvconf/
@@ -207,7 +207,7 @@ do
   initrd_path=edit/boot/initrd.img-"$kerver"
   if [ -f "$vmlinuz_path" ]; then
     if [ -f "$initrd_path" ]; then
-      cp edit/boot/vmlinuz-"$kerver" $vmlinuz
+      cp edit/boot/vmlinuz-"$kerver" "$vmlinuz"
       cp edit/boot/initrd.img-"$kerver" extracted/casper/"$initrd"
       echo -e "\n......Rebuilding initrd...running....."
       mount --bind /dev/ edit/dev

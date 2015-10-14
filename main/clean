@@ -2,15 +2,15 @@
 BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 kerver=$(uname -r)
-livedir=`cat /usr/local/JLIVECD/main/dirn`
-timeout=`cat /usr/local/JLIVECD/main/timeout`
+livedir="$(cat /usr/local/JLIVECD/main/dirn)"
+timeout=$(cat /usr/local/JLIVECD/main/timeout)
 if [[ $timeout =~ ^[\-0-9]+$ ]] && (( timeout > 0)); then
   timeout=$timeout
 else
   timeout=10
 fi
-cd $livedir
-initrd=`cat edit/initrd`
+cd "$livedir"
+initrd="$(cat edit/initrd)"
 rm -f edit/run/synaptic.socket
 chroot edit aptitude clean
 chroot edit rm -r /mydir

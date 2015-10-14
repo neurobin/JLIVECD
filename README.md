@@ -98,6 +98,23 @@ Things to care:
 
 5.The default answer is `no` for all `yes/no` type questions. 
 
+Some Tips & Tricks:
+-------------------
+
+1.If you are not being able to get connected to internet in chroot, you can try running the code: `JLRefreshNetwork` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
+
+2.If you want to change the timeout value then run this code in another terminal in your main system:
+
+```
+sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
+```
+
+"timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout:
+
+```
+sudo echo 12 > /usr/local/JLIVECD/main/timeout
+```
+
 ChangeLog:
 -----------
 ###version 2.0:
@@ -177,20 +194,7 @@ Follow the following link for bug report for more details:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-5.If you are not able to get connected to internet in chroot then you can try running the code: `JLRefreshNetwork` in another terminal in your main system. This may happen, if you have started JLIVECD before connecting your pc to the internet.
-
-6.If you want to change the timeout value then run this code in another terminal in your main system:
-
-```
-sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
-```
-
-"timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout:
-
-```
-sudo echo 12 > /usr/local/JLIVECD/main/timeout
-```
-7.Ubiquity installer, hang/freeze on harddisk detection. This bug is easily solved: you must edit file /usr/share/applications/ubiquity-gtkui.desktop and change the section "exex" from
+5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing file `/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
 
 ```
 sh -c 'ubiquity gtk_ui'

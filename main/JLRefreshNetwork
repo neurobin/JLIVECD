@@ -2,12 +2,12 @@
 BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
 if [ -f "/usr/local/JLIVECD/main/dirn" ]; then
-  livedir=`cat /usr/local/JLIVECD/main/dirn`
+  livedir="$(cat /usr/local/JLIVECD/main/dirn)"
 else
   echo "........May be this your fresh start, run JLstart instead.........."
   exit 1
 fi
-cd $livdedir
+cd "$livdedir"
 echo "......Preparing network connection for chroot in $livedir....."
 sudo cp /run/resolvconf/resolv.conf edit/run/resolvconf/
 sudo cp /etc/hosts edit/etc/
