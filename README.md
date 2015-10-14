@@ -133,10 +133,10 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 
 ###version 2.0.5:
 
-1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kdb> to take the previous choice won't be affected.
+1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kdb> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version 2.0.4 can be safely updated to any later version.
 2. Added another compression method (fast compression).
 3. Minor potential bug fixes.
-4. Docs update.
+4. Docs updated.
 
 
 Tested OS:
