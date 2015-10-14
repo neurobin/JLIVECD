@@ -185,7 +185,7 @@ Other one should be solved by editing:
 /etc/kernel/postinst.d/zz-update-grub
 ```
 
-find the following and comment out the if an fi line: 
+find the following and comment out the if and fi line: 
 
 ```
 if [ -e /boot/grub/grub.cfg ]; then
@@ -216,16 +216,11 @@ Special Feature:
 ----------------
 I call it debcache management! 
 
-
-1.Just put your .deb files in edit/var/cache/apt/archives folder and they won't be downloaded again in the software installaion process.
-
-2.They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
-
-3.You never need to delete .deb files from edit/var/cache/apt/archives manually and you shouldn't.
-
-4.If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from apt-get update). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
-
-5.Altenatively, you can put the .deb files in "debcache" folder too, but in that case you need to run the application after you have finished copying files to this folder...
+1. Just put your .deb files in edit/var/cache/apt/archives folder and they won't be downloaded again in the software installaion process.
+2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
+3. You never need to delete .deb files from edit/var/cache/apt/archives manually and you shouldn't.
+4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from apt-get update). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
+5. Altenatively, you can put the .deb files in "debcache" folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
 
 Source Link:
