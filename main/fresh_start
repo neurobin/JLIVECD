@@ -1,51 +1,52 @@
 #!/bin/bash
-cd $(dirname $0)
+BASEDIR="$(dirname "$BASH_SOURCE")"
+cd "$BASEDIR"
 if [ "$(id -u)" == "0" ]; then
-echo -e "......Sorry.....you need to run this as a normal user, not root....."
-exit 1
+  echo -e "......Sorry.....you need to run this as a normal user, not root....."
+  exit 1
 fi
-maindir=$PWD
+maindir="$PWD"
 c=1
 d=1
 while [ $c == 1 ]
 do
-c=2
-read -e -p "......Where do you want to save your project ?.....choose a directory where you have full permission)..Enter path: " livedir
-livedir=${livedir/\~/$HOME}
-[ -d $livedir ] && echo "***$livedir Exists, Content will be overwritten***" || mkdir $livedir
-if [ ! -d "$livedir" ]; then
-c=1
-echo -e "\n.....Invalid directory name/path!"
-fi
+  c=2
+  read -e -p "......Where do you want to save your project ?.....choose a directory where you have full permission)..Enter path: " livedir
+  livedir="${livedir/\~/$HOME}"
+  [ -d "$livedir" ] && echo "***$livedir Exists, Content will be overwritten***" || mkdir "$livedir"
+  if [ ! -d "$livedir" ]; then
+    c=1
+    echo -e "\n.....Invalid directory name/path!"
+   fi
 done
 cd "$livedir"
 [ -d mnt ] && echo "***$livedir/mnt Exists, Content will be overwritten***" || mkdir mnt
 while [ $d == 1 ]
 do
-d=2
-read -e -p "......Enter the path to your base iso image: " isopath
-isopath=${isopath/\~/$HOME}
-isofullpath=("${isopath[@]}"*)
-if [ -f "$isofullpath" ]; then
-iso=`tail -c 5 <<< "$isofullpath"`
-iso=${iso,,}
-if [ "$iso" == ".iso" ]; then
-echo -e "\n......Found iso: $isofullpath"
-echo $isofullpath > $HOME/JLIVEisopath
-else
-d=1
-echo -e "\n.......Selected file isn't an ISO image......"
-fi 
-elif [ -f "$isofullpath.iso" ]; then
-echo -e "\n......Found iso: $isofullpath.iso"
-echo $isofullpath.iso > $HOME/JLIVEisopath
-else
-d=1
-echo -e "\n......Couldn't find the iso"
-fi
+  d=2
+  read -e -p "......Enter the path to your base iso image: " isopath
+  isopath="${isopath/\~/$HOME}"
+  isofullpath=("${isopath[@]}"*)
+  if [ -f "$isofullpath" ]; then
+    iso="$(tail -c 5 <<< "$isofullpath")"
+    iso="${iso,,}"
+    if [ "$iso" == ".iso" ]; then
+      echo -e "\n......Found iso: $isofullpath"
+      echo "$isofullpath" > "$HOME"/JLIVEisopath
+    else
+      d=1
+      echo -e "\n.......Selected file isn't an ISO image......"
+    fi 
+  elif [ -f "$isofullpath.iso" ]; then
+    echo -e "\n......Found iso: $isofullpath.iso"
+    echo "$isofullpath".iso > "$HOME"/JLIVEisopath
+  else
+    d=1
+    echo -e "\n......Couldn't find the iso"
+  fi
 done
 [ -d extracted ] && echo -e "\n***$livedir/extracted Exists, Content will be overwritten***" || mkdir extracted
 rm -f "$HOME/JLIVEdir"
 rm -f "$HOME/JLIVEyn"
 echo "$livedir" > "$HOME/JLIVEdir"
-echo y > $HOME/JLIVEyn
+echo y > "$HOME"/JLIVEyn
