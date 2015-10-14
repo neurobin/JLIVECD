@@ -194,7 +194,7 @@ fi
 d=1
 ker=""
 echo -e "\n\n"
-read -t $timeout -p "......have you installed new kernel and want to boot the new kernel in live cd/dvd: (y/n)?: " ker
+read -t $timeout -e -p "......have you installed new kernel and want to boot the new kernel in live cd/dvd: (y/n)?: " ker
 if [ "$ker" != "y" ]; then
   if [ "$ker" != "Y" ]; then
     d=2
@@ -235,6 +235,7 @@ do
     d=2
   fi
 done
+read -t $timeout -e -p "......Use fast compression (ISO size may become larger) (Y/n)? " choice1
 echo -e "\n......Updating some required files..."
 ###############################Create CD/DVD##############################################################################
 cd "$livedir"
@@ -246,9 +247,14 @@ sed -i '/casper/d' extracted/casper/filesystem.manifest-desktop
 rm -f extracted/casper/filesystem.squashfs
 echo -e "\n......Deleted old filesystem.squashfs.."
 echo -e "\n......Rebuilding filesystem.squashfs.."
-mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
-#mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
-#sudo mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
+if [[ $choice1 == [Yy] ]];then
+  echo "......Compression will be faster but size may become larger...."
+  mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
+else
+  echo "*****Compression will be slower but size may become lesser*****"
+  #mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
+  mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
+fi
 printf $(du -sx --block-size=1 edit | cut -f1) > extracted/casper/filesystem.size
 cd extracted
 echo -e "\n......Updating md5sums....."
