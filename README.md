@@ -133,7 +133,7 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 
 ###version 2.0.5:
 
-1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kdb> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version 2.0.4 can be safely updated to any later version.
+1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version 2.0.4 can be safely updated to any later version.
 2. Added another compression method (fast compression).
 3. Minor potential bug fixes.
 4. Docs updated.
@@ -200,7 +200,7 @@ Follow the following link for bug report for more details:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing file `/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
+5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing file `edit/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
 
 ```
 sh -c 'ubiquity gtk_ui'
