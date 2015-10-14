@@ -235,6 +235,7 @@ do
     d=2
   fi
 done
+read -t $timeout -e -p "......Use fast compression (ISO size may become larger) (Y/n)? " choice1
 echo -e "\n......Updating some required files..."
 ###############################Create CD/DVD##############################################################################
 cd "$livedir"
@@ -246,10 +247,11 @@ sed -i '/casper/d' extracted/casper/filesystem.manifest-desktop
 rm -f extracted/casper/filesystem.squashfs
 echo -e "\n......Deleted old filesystem.squashfs.."
 echo -e "\n......Rebuilding filesystem.squashfs.."
-read -t $timeout -e -p "Use fast compression (ISO size may become larger) (Y/n)? " choice1
 if [[ $choice1 == [Yy] ]];then
+  echo "......Compression will be faster but size may become larger...."
   mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
 else
+  echo "*****Compression will be slower but size may become lesser*****"
   #mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
   mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
 fi
