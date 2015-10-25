@@ -199,7 +199,7 @@ Follow the following link for bug report for more details:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing file `edit/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
+5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing the file `edit/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
 
 ```
 sh -c 'ubiquity gtk_ui'
