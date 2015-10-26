@@ -32,14 +32,22 @@ Features:
 Requirements:
 ------------
 
-1.squashfs-tools
+0. bash (This is generally installed by default in most Linux distros)
+1. squashfs-tools
+2. genisoimage
+3. xterm (optional)
 
-2.genisoimage
 
-install requirements by:
+Install requirements with the following command:
 
 ```
 sudo apt-get install squashfs-tools genisoimage
+```
+
+Optionally you can keep `xterm` installed. It will work as a backup terminal in case the default terminal fails to run.
+
+```
+sudo apt-get install xterm
 ```
 
 Installation:
