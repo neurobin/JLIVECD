@@ -133,6 +133,8 @@ sudo sed -i 's/x-terminal-emulator/xterm/g' /usr/local/JLIVECD/main/custom_deskt
 
 where `x-terminal-emulator` is the current default and `xterm` is the to-be default. Note that, this changes the source code.
 
+You don't need to do this for `xterm` though, `xterm` is already a secondary default.
+
 ChangeLog:
 -----------
 ###version 2.0:
