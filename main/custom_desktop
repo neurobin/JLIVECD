@@ -148,10 +148,10 @@ xterm -e "bash -c 'chroot edit ./prepare'"
 echo "------Failed to run xterm. Probably not installed!!"
 }
 echo -e "\n......Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
-x-terminal-emulator -e "bash -c 'chroot ./edit;bash'" || {
+x-terminal-emulator -e "bash -c 'chroot ./edit;exec bash'" || {
 echo "------Failed to run x-terminal-emulator. Check if x-terminal-emulator link exists and not broken"
 echo "......Trying xterm....."
-xterm -e "bash -c 'chroot ./edit;bash'" 
+xterm -e "bash -c 'chroot ./edit;exec bash'" 
 } || {
 echo "------Failed to run xterm. Probably not installed!!"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1

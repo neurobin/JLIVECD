@@ -115,6 +115,16 @@ sudo echo timeout_value > /usr/local/JLIVECD/main/timeout
 sudo echo 12 > /usr/local/JLIVECD/main/timeout
 ```
 
+3.JLIVECD seems to have problem running the mate-teminal properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
+
+4.You can change the default terminal JLIVECD uses for chroot by the following code:
+
+```
+sudo sed -i 's/x-terminal-emulator/xterm/g' /usr/local/JLIVECD/main/custom_desktop
+```
+
+where `x-terminal-emulator` is the current default and `xterm` is the to-be default.
+
 ChangeLog:
 -----------
 ###version 2.0:
@@ -138,6 +148,10 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 3. Minor potential bug fixes.
 4. Docs updated.
 
+###version 2.0.6:
+
+1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
+2. Docs updated.
 
 Tested OS:
 ---------
