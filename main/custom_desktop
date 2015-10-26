@@ -144,18 +144,17 @@ mount --bind /dev/ edit/dev
 echo -e "\n......Preparing the chroot terminal......"
 xhost +
 $primary_jl_terminal -e "bash -c 'chroot edit ./prepare'" || {
-echo "------Couldn't run x-terminal-emulator, trying xterm...."
+echo "------Couldn't run $primary_jl_terminal, trying $secondary_jl_terminal...."
 $secondary_jl_terminal -e "bash -c 'chroot edit ./prepare'"
 } || {
-echo "------Failed to run xterm. Probably not installed!!"
+echo "------Failed to run $secondary_jl_terminal. Probably not installed!!"
 }
 echo -e "\n......Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
 $primary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" || {
-echo "------Failed to run x-terminal-emulator. Check if x-terminal-emulator link exists and not broken"
-echo "......Trying xterm....."
+echo "------Couldn't run $primary_jl_terminal, trying $secondary_jl_terminal...."
 $secondary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" 
 } || {
-echo "------Failed to run xterm. Probably not installed!!"
+echo "------Failed to run $secondary_jl_terminal. Probably not installed!!"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1
 if [[ $choice1 =~ [Yy] ]];then
   echo "......Continuing without chroot. No modification will be done"
