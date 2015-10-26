@@ -125,15 +125,22 @@ sudo echo 12 > /usr/local/JLIVECD/main/timeout
 
 3.JLIVECD seems to have problem running the `mate-terminal` properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
 
-4.You can change the default terminal JLIVECD uses for chroot by the following code (applying patch):
+4.You can change the default terminal JLIVECD uses for chroot applying patch to the source code.
+
+To change the primary default terminal, run the following command in a terminal in your main system:
 
 ```
-sudo sed -i 's/x-terminal-emulator/xterm/g' /usr/local/JLIVECD/main/custom_desktop
+sudo sed -i "s/\(primary_jl_terminal='\)[^']*/\1your-custom-terminal/" /usr/local/JLIVECD/main/custom_desktop
 ```
 
-where `x-terminal-emulator` is the current default and `xterm` is the to-be default. Note that, this changes the source code.
+To change the secondary default:
 
-You don't need to do this for `xterm` though, `xterm` is already a secondary default.
+```
+sudo sed -i "s/\(secondary_jl_terminal='\)[^']*/\1your-custom-terminal/" /usr/local/JLIVECD/main/custom_desktop
+
+```
+
+Where `your-custom-terminal` should be changed to the actutal terminal command ( `xfce4-terminal`, `gnome-terminal`, `xterm` or whatever). <span class="quote">Don't type the above code, copy-paste in terminal and then edit the part: <code>your-custom-terminal</code>.</span>
 
 ChangeLog:
 -----------

@@ -1,6 +1,8 @@
 #!/bin/bash
 BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
+primary_jl_terminal='x-terminal-emulator'
+secondary_jl_terminal='xterm'
 if [ -f "/tmp/JLlock" ]; then
   echo -e "\nSorry... another instance of this section is running\n or premature shutdown detected from a previous run....\n.......You need to finish that first or force your way through....."
   read -t 10 -p "Do you want to force your way through..(y/n)?: " force
@@ -141,17 +143,17 @@ fi
 mount --bind /dev/ edit/dev
 echo -e "\n......Preparing the chroot terminal......"
 xhost +
-x-terminal-emulator -e "bash -c 'chroot edit ./prepare'" || {
+$primary_jl_terminal -e "bash -c 'chroot edit ./prepare'" || {
 echo "------Couldn't run x-terminal-emulator, trying xterm...."
-xterm -e "bash -c 'chroot edit ./prepare'"
+$secondary_jl_terminal -e "bash -c 'chroot edit ./prepare'"
 } || {
 echo "------Failed to run xterm. Probably not installed!!"
 }
 echo -e "\n......Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
-x-terminal-emulator -e "bash -c 'chroot ./edit;exec bash'" || {
+$primary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" || {
 echo "------Failed to run x-terminal-emulator. Check if x-terminal-emulator link exists and not broken"
 echo "......Trying xterm....."
-xterm -e "bash -c 'chroot ./edit;exec bash'" 
+$secondary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" 
 } || {
 echo "------Failed to run xterm. Probably not installed!!"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1
