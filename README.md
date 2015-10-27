@@ -125,6 +125,16 @@ Some Tips & Tricks:
 
 4. You can change the default terminal JLIVECD uses for chroot. To change the primary default terminal run this code in a terminal in your main system: `JLopt -t1 actual-terminal-command`. To change the secondary default terminal: `JLopt -t2 actual-terminal-command`. For Ex. `JLopt -t1 gnome-terminal`
 
+Special Feature:
+----------------
+I call it debcache management! 
+
+1. Just put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installaion process.
+2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
+3. You never need to delete .deb files from *edit/var/cache/apt/archives* manually and you shouldn't.
+4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
+5. Altenatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
+
 ChangeLog:
 -----------
 ###version 2.0:
@@ -235,17 +245,6 @@ to
 ```
 sh -c 'sudo ubiquity gtk_ui'
 ```
-
-
-Special Feature:
-----------------
-I call it debcache management! 
-
-1. Just put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installaion process.
-2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
-3. You never need to delete .deb files from *edit/var/cache/apt/archives* manually and you shouldn't.
-4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
-5. Altenatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
 Web page:
 ---------
