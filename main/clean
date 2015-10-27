@@ -1,14 +1,20 @@
 #!/bin/bash
 BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
+logdir="$HOME/.neurobin/JLIVECD"
+mkdir -p "$logdir"
+configfile="$logdir/.config"
 kerver=$(uname -r)
 livedir="$(cat /usr/local/JLIVECD/main/dirn)"
-timeout=$(cat /usr/local/JLIVECD/main/timeout)
-if [[ $timeout =~ ^[\-0-9]+$ ]] && (( timeout > 0)); then
-  timeout=$timeout
+liveconfigfile="$livedir/.config"
+timeout="$(grep -soP '(?<=^timeout=).*' "$configfile")"
+if [[ $timeout =~ ^[0-9]+$ ]]; then
+  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 else
   timeout=10
 fi
+homec="$(grep -soP '(?<=^RetainHome=).*' "$liveconfigfile")"
+[[ $homec =~ ^[Yy]$ ]] || homec="n" 
 cd "$livedir"
 initrd="$(cat edit/initrd)"
 rm -f edit/run/synaptic.socket
@@ -23,13 +29,19 @@ chroot edit umount /sys
 chroot edit umount /dev/pts
 umount edit/dev || umount -lf edit/dev
 rm -f /tmp/JLlock
-echo -e "\n...............Time is value.............\n......you have $timeout seconds each to answere the following questions.....\n......if not answered, I will take 'n' as default (be ready)...\n"
-read -t $timeout -p "Want to retain edit/home directory? (y/n)?: " home
-if [ "$home" != "y" ] && [ "$home" != "Y" ]; then
-rm -rf edit/home/*
-echo "........edit/home cleaned!......"
+echo -e "\n...............Time is value.............\n......you have $timeout seconds each to answere the following questions.....\n......if not answered, I will take 'n' as default (be ready)...\n......Some default may be different due to previous choice.\n"
+read -t $timeout -p "Want to retain edit/home directory? (y/n)? (default '$homec'): " home
+[[ $home == "" ]] && home=$homec
+if [[  $home =~ ^[Yy]$ ]]; then
+  echo "........edit/home kept as it is......."
 else
-echo "........edit/home kept as it is......."
+  rm -rf edit/home/*
+  echo "........edit/home cleaned!......"
+fi
+if grep -sq '^RetainHome=' $liveconfigfile;then
+   sed -r -i.bak "s/(^RetainHome=).*/\1$home/" $liveconfigfile
+else
+    echo "RetainHome=$home" >> $liveconfigfile
 fi
 echo "\n......initrd archive type: $initrd detected!"
 echo -e "\n\n.....................Rebuilding initrd!....................\n.......this step is needed if you have modified the kernel module, or init scripts......\n......If you have installed new kernel and want to boot that kernel then skip this for now.....\n"

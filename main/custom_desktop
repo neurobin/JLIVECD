@@ -1,11 +1,15 @@
 #!/bin/bash
 BASEDIR="$(dirname "$BASH_SOURCE")"
 cd "$BASEDIR"
-primary_jl_terminal='x-terminal-emulator'
-secondary_jl_terminal='xterm'
+logdir="$HOME/.neurobin/JLIVECD"
+configfile="$logdir/.config"
+JL_terminal1="$(grep -soP '(?<=^terminal1=).*' "$configfile")"
+JL_terminal2="$(grep -soP '(?<=^terminal2=).*' "$configfile")"
+command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
+command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 if [ -f "/tmp/JLlock" ]; then
   echo -e "\nSorry... another instance of this section is running\n or premature shutdown detected from a previous run....\n.......You need to finish that first or force your way through....."
-  read -t 10 -p "Do you want to force your way through..(y/n)?: " force
+  read -t 10 -p "Force start..(y/n)?: " force
   if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
     echo -e "\n.....Exiting...."
     exit 1
@@ -15,9 +19,9 @@ echo "1" > /tmp/JLlock
 maindir="$PWD"
 yn="n"
 livedir=""
-timeout="$(cat /usr/local/JLIVECD/main/timeout)"
-if [[ $timeout =~ ^[\-0-9]+$ ]] && (( timeout > 0)); then
-  timeout=$timeout
+timeout="$(grep -soP '(?<=^timeout=).*' "$configfile")"
+if [[ $timeout =~ ^[0-9]+$ ]]; then
+  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 else
   timeout=10
 fi
@@ -42,7 +46,7 @@ if [ "$yn" == "y" ]; then
   cd "$livedir"
   isopath="$(cat $HOME/JLIVEisopath)"
   if [ -d edit ]; then
-    echo -e "\n***Seems this wasn't really a fresh start (edit directory exists)***,\n***existing files will be overwritten!!!***\n if you aren't sure what this warning is about, close this terminal and run again.If this is shown again, enter y and continue..."
+    echo -e "\n***Seems this isn't really a new project (edit directory exists)***,\n***existing files will be overwritten!!!***\n if you aren't sure what this warning is about, close this terminal and run again.If this is shown again, enter y and continue..."
     read -p ".......Are you sure, you want to continue (y/n)?: " cont
     if [  "$cont" == "y" ] || [ "$cont" == "Y" ]; then
       echo -e "\n.....OK....."
@@ -51,10 +55,10 @@ if [ "$yn" == "y" ]; then
       exit 0
     fi
   fi
-  mount -o loop "$isopath" mnt
-  rsync --exclude=/casper/filesystem.squashfs -a mnt/ extracted
-  unsquashfs mnt/casper/filesystem.squashfs
-  mv squashfs-root edit
+  mount -o loop "$isopath" mnt || { echo "------Failed to mount iso.";exit 1; }
+  rsync --exclude=/casper/filesystem.squashfs -a mnt/ extracted || { echo "------rsync failed";exit 1; }
+  unsquashfs mnt/casper/filesystem.squashfs || { echo "------unsquashfs failed";exit 1; }
+  mv squashfs-root edit || { echo "------Couldn't move squashfs-root.";exit 1; }
   umount mnt
 fi
 cd "$maindir"
@@ -87,6 +91,9 @@ do
     echo -e "\n......Directory doesn't exist!"
   fi
 done
+liveconfigfile="$livedir/.config"
+touch "$liveconfigfile"
+chmod 777 "$liveconfigfile"
 echo -e "\n......If you just hit enter it will take your previous choice (if any)"
 read -e -p "......Enter your desired (customized) cd/dvd name: " cdname
 iso="$(tail -c 5 <<< "$isofullpath")"
@@ -95,17 +102,22 @@ if [ "$iso" == ".iso" ]; then
   cdname="${cdname:0:${#cdname}-4}"
 fi
 if [ "$cdname" == "" ]; then
-  if [ -f "$livedir/disk" ]; then
-    cdname="$(cat "$livedir"/disk)"
+  if [ -f "$liveconfigfile" ]; then
+    cdname="$(grep -soP '(?<=^DiskName=).*' "$liveconfigfile")"
+    [[ $cdname == "" ]] && { 
+    cdname="New-Disk";echo -e "\n******Using 'New-Disk' as cd/dvd name"; 
+    } ||
     echo -e "\n......Using previously used name: $cdname"
   else
     cdname="New-Disk"
     echo -e "\n******Using 'New-Disk' as cd/dvd name"
   fi
 fi
-rm -f "$livedir"/disk
-echo "$cdname" > "$livedir"/disk
-chmod 777 "$livedir"/disk
+if grep -sq '^DiskName=' $liveconfigfile;then
+   sed -r -i.bak "s/(^DiskName=).*/\1$cdname/" $liveconfigfile
+else
+    echo "DiskName=$cdname" >> $liveconfigfile
+fi
 ##############################Copy some required files#####################################################################
 cp clean "$livedir"/edit/clean
 cp preparechroot "$livedir"/edit/prepare
@@ -143,18 +155,18 @@ fi
 mount --bind /dev/ edit/dev
 echo -e "\n......Preparing the chroot terminal......"
 xhost +
-$primary_jl_terminal -e "bash -c 'chroot edit ./prepare'" || {
-echo "------Couldn't run $primary_jl_terminal, trying $secondary_jl_terminal...."
-$secondary_jl_terminal -e "bash -c 'chroot edit ./prepare'"
+$JL_terminal1 -e "bash -c 'chroot edit ./prepare'" || {
+echo "------Couldn't run $JL_terminal1, trying $JL_terminal2...."
+$JL_terminal2 -e "bash -c 'chroot edit ./prepare'"
 } || {
-echo "------Failed to run $secondary_jl_terminal. Probably not installed!!"
+echo "------Failed to run $JL_terminal2. Probably not installed!!"
 }
 echo -e "\n......Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
-$primary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" || {
-echo "------Couldn't run $primary_jl_terminal, trying $secondary_jl_terminal...."
-$secondary_jl_terminal -e "bash -c 'chroot ./edit;exec bash'" 
+$JL_terminal1 -e "bash -c 'chroot ./edit;exec bash'" || {
+echo "------Couldn't run $JL_terminal1, trying $JL_terminal2...."
+$JL_terminal2 -e "bash -c 'chroot ./edit;exec bash'" 
 } || {
-echo "------Failed to run $secondary_jl_terminal. Probably not installed!!"
+echo "------Failed to run $JL_terminal2. Probably not installed!!"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1
 if [[ $choice1 =~ [Yy] ]];then
   echo "......Continuing without chroot. No modification will be done"
@@ -245,7 +257,14 @@ do
     d=2
   fi
 done
-read -t $timeout -e -p "......Use fast compression (ISO size may become larger) (Y/n)? " choice1
+fastcomp="$(grep -soP '(?<=^FastCompression=).*' "$liveconfigfile")"
+read -t $timeout -e -p "......Use fast compression (ISO size may become larger) (Y/n)? (default '$fastcomp'): " choice1
+[[ $choice1 == "" ]] && choice1="$fastcomp"
+if grep -sq '^FastCompression=' $liveconfigfile;then
+   sed -r -i.bak "s/(^FastCompression=).*/\1$choice1/" $liveconfigfile
+else
+    echo "FastCompression=$choice1" >> $liveconfigfile
+fi
 echo -e "\n......Updating some required files..."
 ###############################Create CD/DVD##############################################################################
 cd "$livedir"
@@ -258,10 +277,10 @@ rm -f extracted/casper/filesystem.squashfs
 echo -e "\n......Deleted old filesystem.squashfs.."
 echo -e "\n......Rebuilding filesystem.squashfs.."
 if [[ $choice1 == [Yy] ]];then
-  echo "......Compression will be faster but size may become larger...."
+  echo "......Using fast compression. Size may become larger...."
   mksquashfs edit extracted/casper/filesystem.squashfs -b 1048576
 else
-  echo "*****Compression will be slower but size may become lesser*****"
+  echo "*****Using exhaustive compression. Size may become lesser*****"
   #mksquashfs edit extracted/casper/filesystem.squashfs -comp xz
   mksquashfs edit extracted/casper/filesystem.squashfs -comp xz -e edit/boot
 fi

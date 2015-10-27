@@ -3,10 +3,10 @@ cd "$(dirname "$BASH_SOURCE")"
 sudo -sk <<EOF
 chmod -R 755 *
 mkdir -p /usr/local/JLIVECD
-cp -R . /usr/local/JLIVECD
+cp -R ./* /usr/local/JLIVECD/
 chmod -R 755 /usr/local/JLIVECD
 cp JLstart /bin
-cp main/JLRefreshNetwork /bin
+cp JLopt /bin
 echo "[Desktop Entry]
 Name=JLIVECD
 Type=Application
