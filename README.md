@@ -112,7 +112,7 @@ Things to care:
 
 5.The default answer is `no` for all `yes/no` type questions unless specified otherwise.
 
-6.The default answers for `yes/no` type questions are changed according to previous choices for some questions (retain home directory? etc..). For example, if you chose `y` for the question `retain home directory (y/n)?`; next time if you just hit <kbd>Enter</kbd>, it will take `y` instead of `n`. This is project specific i.e each project remembers its own options.
+6.The default answers for `yes/no` type questions are changed according to previous choices for some questions (retain home directory? etc..). For example, if you choose `y` for the question `retain home directory (y/n)?`; next time if you just hit <kbd>Enter</kbd>, it will take `y` instead of `n`. This is project specific i.e each project remembers its own options.
 
 Some Tips & Tricks:
 -------------------
