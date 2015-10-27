@@ -119,7 +119,7 @@ Some Tips & Tricks:
 
 1. If you are not being able to get connected to internet in chroot, you can try running the code: `JLopt -rn` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
 
-2. If you want to change the timeout value then run this code in another terminal in your main system: `JLopt -t timeout_value`. "timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout: `JLopt -t 12`
+2. If you want to change the timeout value then run this code in a terminal in your main system: `JLopt -t timeout_value`. "timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout: `JLopt -t 12`
 
 3. JLIVECD seems to have problem running the `mate-terminal` properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
 
