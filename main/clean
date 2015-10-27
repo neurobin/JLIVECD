@@ -33,17 +33,17 @@ echo -e "\n...............Time is value.............\n......you have $timeout se
 read -t $timeout -p "Want to retain edit/home directory? (y/n)? (default '$homec'): " home
 [[ $home == "" ]] && home=$homec
 if [[  $home =~ ^[Yy]$ ]]; then
-  echo "........edit/home kept as it is......."
+  echo -e "\n........edit/home kept as it is......."
 else
   rm -rf edit/home/*
-  echo "........edit/home cleaned!......"
+  echo -e "\n........edit/home cleaned!......"
 fi
 if grep -sq '^RetainHome=' $liveconfigfile;then
    sed -r -i.bak "s/(^RetainHome=).*/\1$home/" $liveconfigfile
 else
     echo "RetainHome=$home" >> $liveconfigfile
 fi
-echo "\n......initrd archive type: $initrd detected!"
+echo -e "\n......initrd archive type: $initrd detected!"
 echo -e "\n\n.....................Rebuilding initrd!....................\n.......this step is needed if you have modified the kernel module, or init scripts......\n......If you have installed new kernel and want to boot that kernel then skip this for now.....\n"
 
 read -t $timeout -p "......have you modified init script or kernel module? (y/n)?: " choice

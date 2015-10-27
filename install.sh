@@ -16,5 +16,5 @@ Icon=/usr/local/JLIVECD/main/48.png
 Categories=System;
 Comment=Live CD/DVD customization tool (CLI)" > /usr/share/applications/JLIVECD.desktop
 echo ".......Install complete!"
-echo ".......See the readme file provided with this software for instructions to use it......"
+echo ".......See the readme file provided with this software for instructions on how to use it......"
 EOF
