@@ -177,6 +177,7 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 Tested OS:
 ---------
 
+* Xubuntu 16.04 LTS
 * Linux Mint 17 cinnamon
 * Linux Mint 17 XFCE
 * Xubuntu 14.04.1 LTS
