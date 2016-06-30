@@ -153,18 +153,36 @@ if [ -d "debcache" ]; then
 fi
 ##############################Create chroot environment and prepare it for use#############################################
 mount --bind /dev/ edit/dev
-echo -e "\n......Preparing the chroot terminal......"
-xhost +
-$JL_terminal1 -e "bash -c 'chroot edit ./prepare'" || {
-echo "------Couldn't run $JL_terminal1, trying $JL_terminal2...."
-$JL_terminal2 -e "bash -c 'chroot edit ./prepare'"
-} || {
-echo "------Failed to run $JL_terminal2. Probably not installed!!"
-}
+printf "\n......Detecting access control state......\n"
+if xhost | grep 'access control enabled' >/dev/null; then
+    bxhost='-'
+    printf '\n......Access control is enabled\n'
+else
+    bxhost='+'
+    printf '\n......Access control is disabled\n'
+fi
+dxhost="$(grep -soP '(?<=^xhost=).*' "$liveconfigfile")"
+if [[ $bxhost = '+' ]]; then
+    read -t $timeout -p "......Enable access control (prevent GUI apps to run) (Y/n)? (default '$xhost'): " xh
+else
+    read -t $timeout -p "......Keep access control enabled (prevent GUI apps to run) (Y/n)? (default '$xhost'): " xh
+fi
+[[ $xh == "" ]] && xh="$dxhost"
+if grep -sq '^xhost=' $liveconfigfile;then
+   sed -r -i.bak "s/(^xhost=).*/\1$xh/" $liveconfigfile
+else
+    echo "xhost=$xh" >> $liveconfigfile
+fi
+if [[ ! "$xh" = [Yy] ]]; then
+    xhost +
+else
+    xhost -
+fi
+
 echo -e "\n......Running chroot terminal...\n......When you are finished, run: exit or simply close the chroot terminal.....\n\n...... run 'cat help' or './help' to get help in chroot terminal......\n"
-$JL_terminal1 -e "bash -c 'chroot ./edit;exec bash'" || {
+$JL_terminal1 -e "bash -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec bash'" || {
 echo "------Couldn't run $JL_terminal1, trying $JL_terminal2...."
-$JL_terminal2 -e "bash -c 'chroot ./edit;exec bash'" 
+$JL_terminal2 -e "bash -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec bash'"
 } || {
 echo "------Failed to run $JL_terminal2. Probably not installed!!"
 read -e -p "Want to continue without chroot (Y/n)?: " choice1
@@ -175,7 +193,8 @@ else
   exit 2
 fi
 }
-xhost -
+echo '......Restoring access control state'
+xhost $bxhost #leave this variable unquoted
 ##################################Debcache management############################################################
 echo -e "\n......Debcache Management starting......\n......Moving .deb files to debcache......"
 cd "$livedir"

@@ -10,3 +10,4 @@ ln -s /bin/true /sbin/initctl
 mkdir /mydir
 chmod -R 777 /mydir
 ln -sf /run/resolvconf/resolv.conf /etc/
+echo '.....Chroot preparation finished'
