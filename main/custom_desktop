@@ -163,9 +163,9 @@ else
 fi
 dxhost="$(grep -soP '(?<=^xhost=).*' "$liveconfigfile")"
 if [[ $bxhost = '+' ]]; then
-    read -t $timeout -p "......Enable access control (prevent GUI apps to run) (Y/n)? (default '$xhost'): " xh
+    read -t $timeout -p "......Enable access control (prevent GUI apps to run) (Y/n)? (default '$dxhost'): " xh
 else
-    read -t $timeout -p "......Keep access control enabled (prevent GUI apps to run) (Y/n)? (default '$xhost'): " xh
+    read -t $timeout -p "......Keep access control enabled (prevent GUI apps to run) (Y/n)? (default '$dxhost'): " xh
 fi
 [[ $xh == "" ]] && xh="$dxhost"
 if grep -sq '^xhost=' $liveconfigfile;then
