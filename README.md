@@ -137,6 +137,37 @@ I call it debcache management!
 
 ChangeLog:
 -----------
+
+###version 2.1.1:
+
+1. fix `$HOME` and `$LC_ALL` in chroot
+2. chroot preparation is done in the same terminal window as chroot.
+3. Aaccess control management (xhost)
+
+###version 2.1.0:
+
+1. You can change default terminals without applying patch to the source code.
+2. It now remembers several project-wise options (delete home directory?, fast compression?, etc..).
+3. Options are handled with config files both globally and project-wise.
+4. Added show version info (`JLopt -v`)
+5. Added show help menu (`JLopt -h`)
+6. New script `JLopt` contains several useful functionality.
+7. Several potential bug fixes.
+8. Docs updated.
+
+
+###version 2.0.6:
+
+1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
+2. Docs updated.
+
+###version 2.0.5:
+
+1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version >=2.0.4 can be safely updated to any later version.
+2. Added another compression method (fast compression).
+3. Minor potential bug fixes.
+4. Docs updated.
+
 ###version 2.0:
 
 1.You can use short cut in names for path to base iso i.e xubuntu for xubuntu-14.04.1-x64.iso, if there is no other file named "xubuntu" in the same folder. You can even use only x if there is no other file starting with x in the same folder.
@@ -150,29 +181,6 @@ enter base iso path: ~/Downloads/x
 As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will take that file as input automatically.
 
 2.You can use full path with or without `.iso`.
-
-###version 2.0.5:
-
-1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version >=2.0.4 can be safely updated to any later version.
-2. Added another compression method (fast compression).
-3. Minor potential bug fixes.
-4. Docs updated.
-
-###version 2.0.6:
-
-1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
-2. Docs updated.
-
-###version 2.1.0:
-
-1. You can change default terminals without applying patch to the source code.
-2. It now remembers several project-wise options (delete home directory?, fast compression?, etc..).
-3. Options are handled with config files both globally and project-wise.
-4. Added show version info (`JLopt -v`)
-5. Added show help menu (`JLopt -h`)
-6. New script `JLopt` contains several useful functionality.
-7. Several potential bug fixes.
-8. Docs updated.
 
 Tested OS:
 ---------

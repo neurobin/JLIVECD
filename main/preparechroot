@@ -1,13 +1,18 @@
 #!/bin/bash
-mount -t proc none /proc
-mount -t sysfs none /sys
-mount -t devpts none /dev/pts
+echo '*****Preparing chroot...*****'
+mount -t proc none /proc && echo '.....mounted /proc'
+mount -t sysfs none /sys && echo '.....mounted /sys'
+mount -t devpts none /dev/pts && echo '.....mounted /dev/pts'
 export HOME=/root
 export LC_ALL=C
 dbus-uuidgen > /var/lib/dbus/machine-id
 dpkg-divert --local --rename --add /sbin/initctl
 ln -s /bin/true /sbin/initctl
-mkdir /mydir
-chmod -R 777 /mydir
+mkdir /mydir && echo '.....created a temporary dir: /mydir, you can use this dir to store temporary files. It will be deleted once you exit chroot.'
+chmod -R 777 /mydir && echo '.....you can copy/modify anything to /mydir without root permission'
 ln -sf /run/resolvconf/resolv.conf /etc/
-echo '.....Chroot preparation finished'
+echo '*****Chroot preparation finished*****'
+echo "
+.....This is the chroot terminal
+.....Run './help' to get help
+"
