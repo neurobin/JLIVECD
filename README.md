@@ -1,5 +1,4 @@
-Disclaimer
------------
+# Disclaimer
 
 Customized ISOs for personal use are fine. If you want to share your customization with others, whether for free or for purchase, you'll have to rename it; remove all distro specific artwork, branding, and other identity elements; and you can't confuse your intended users about the customization being associated in any way with the base distro.
 
@@ -8,13 +7,12 @@ You're free to use the softwares without renaming those, as they are licensed un
 The name and identity elements of a distro are trademarked and copyrighted. Unless you have approval from appropriate authorization you can't use those (identity elements and name).
 *************************************************************************************************************************
 
-What this is about:
--------------------
+# What this is about:
+
 This is a simple command line tool to customize live cd/dvd of ubuntu based distros, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
 https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
 
-Features:
----------
+# Features:
 
 1. You can save your project in a suitable directory and keep adding and changing things while checking the ISOs' built on those changes.
 2. Your changes are always saved. You can resume it whenever you like.
@@ -23,8 +21,7 @@ Features:
 5. It remembers user choices for various options and prompts both globally and locally (project wise).
 
 
-Requirements:
-------------
+# Requirements:
 
 0. bash (This is generally installed by default in most Linux distros)
 1. squashfs-tools
@@ -44,8 +41,7 @@ Optionally you can keep `xterm` installed. It will work as a backup terminal in 
 sudo apt-get install xterm
 ```
 
-Installation:
-------------
+# Installation:
 
 give the `install.sh` file execution permission and run it in terminal.
 
@@ -54,8 +50,7 @@ chmod +x ./install.sh
 ./install.sh    # or you can just drag & drop in terminal
 ```
 
-How to use:
-----------
+# How to use:
 
 Run `JLstart` in a terminal or run it from `menu->system->JLIVECD`.
 
@@ -77,8 +72,7 @@ Is this a new project: (y/n)?: n
 
 Hints are given on the go, follow them to successfully create a customized live cd/dvd.
 
-Directories & Files:
---------------------
+# Directories & Files:
 
 1. In your project directory, you will find some default directories. Don't change their names. The directories are:
 
@@ -91,8 +85,8 @@ Directories & Files:
 
 
 
-Things to care:
----------------
+# Things to care:
+
 1.Don't use quotation in file/folder path
 
 `~/"some folder"` or `"~/some folder"` is invalid
@@ -109,8 +103,7 @@ Things to care:
 
 6.The default answers for `yes/no` type questions are changed according to previous choices for some questions (retain home directory? etc..). For example, if you choose `y` for the question `retain home directory (y/n)?`; next time if you just hit <kbd>Enter</kbd>, it will take `y` instead of `n`. This is project specific i.e each project remembers its own options.
 
-Some Tips & Tricks:
--------------------
+# Some Tips & Tricks:
 
 1. If you are not being able to get connected to internet in chroot, you can try running the code: `JLopt -rn` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
 
@@ -120,8 +113,8 @@ Some Tips & Tricks:
 
 4. You can change the default terminal JLIVECD uses for chroot. To change the primary default terminal run this code in a terminal in your main system: `JLopt -t1 actual-terminal-command`. To change the secondary default terminal: `JLopt -t2 actual-terminal-command`. For Ex. `JLopt -t1 gnome-terminal`
 
-Special Feature:
-----------------
+# Special Feature:
+
 I call it debcache management! 
 
 1. Just put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installaion process.
@@ -130,8 +123,7 @@ I call it debcache management!
 4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
 5. Altenatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
-ChangeLog:
------------
+# ChangeLog:
 
 ###version 2.1.1:
 
@@ -177,8 +169,7 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 
 2.You can use full path with or without `.iso`.
 
-Tested OS:
----------
+# Tested OS:
 
 * Xubuntu 16.04 LTS
 * Linux Mint 17 cinnamon
@@ -187,8 +178,7 @@ Tested OS:
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
 
-Additonal info:
---------------
+# Additonal info:
 
 1.In Linux Mint 17 XFCE there's a bug. To fix this edit `/usr/sbin/invoke-rc.d` file (in chroot) as:
 replace `exit 100` with `exit 0` at line `285` and `421`, then apply upgrade. after upgrading revert this modification (must).
