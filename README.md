@@ -53,7 +53,7 @@ chmod +x ./install.sh
 
 Run `JLstart` in a terminal or run it from `menu->system->JLIVECD`.
 
-![JLIVECD menu image](img/runjlivecd.png)
+<img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
 N.B: This does no modification on it's own. you need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image. And of course, you need an iso image as base as no other image or archive will work with this tool.
 
