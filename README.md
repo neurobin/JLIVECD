@@ -11,6 +11,10 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 This is a simple command line tool to customize live cd/dvd of ubuntu based distros, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
 https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
 
+N.B: You need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image.
+
+<mark>Please read through the <a href="#additional-info">Additional info</a> section before you start with a Ubuntu or Linux Mint ISO for the first time.</mark>
+
 # Features:
 
 1. You can save your project in a suitable directory and keep adding and changing things while checking the ISOs' built on those changes.
@@ -22,21 +26,21 @@ https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for
 
 # Requirements:
 
-0. bash (This is generally installed by default in most Linux distros)
-1. squashfs-tools
-2. genisoimage
-3. xterm (optional)
-
+1. bash (This is generally installed by default in most Linux distros)
+2. squashfs-tools
+3. genisoimage
+4. syslinux, syslinux-utils (If you want hybrid ISO image)
+5. xterm (optional)
 
 Install requirements with the following command:
 
-```
-sudo apt-get install squashfs-tools genisoimage
+```sh
+sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils
 ```
 
 Optionally you can keep `xterm` installed. It will work as a backup terminal in case the default terminal fails to run.
 
-```
+```sh
 sudo apt-get install xterm
 ```
 
@@ -44,7 +48,7 @@ sudo apt-get install xterm
 
 give the `install.sh` file execution permission and run it in terminal.
 
-```
+```sh
 chmod +x ./install.sh
 ./install.sh    # or you can just drag & drop in terminal
 ```
@@ -55,11 +59,9 @@ Run `JLstart` in a terminal or run it from `menu->system->JLIVECD`.
 
 <img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
-N.B: This does no modification on it's own. you need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image. And of course, you need an iso image as base as no other image or archive will work with this tool.
-
 Example:
 
-```
+```sh
 ~$ JLstart
 
 Is this a new project: (y/n)?: n
@@ -124,6 +126,11 @@ I call it debcache management!
 
 # ChangeLog:
 
+###version 2.1.2:
+
+1. UEFI image support
+2. Hybrid image support
+
 ###version 2.1.1:
 
 1. fix `$HOME` and `$LC_ALL` in chroot
@@ -160,7 +167,7 @@ I call it debcache management!
 
 Example:
 
-```
+```sh
 enter base iso path: ~/Downloads/x
 ```
 
@@ -177,6 +184,8 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
 
+<div id="additional-info"></div>
+
 # Additonal info:
 
 1.In Linux Mint 17 XFCE there's a bug. To fix this edit `/usr/sbin/invoke-rc.d` file (in chroot) as:
@@ -186,7 +195,7 @@ replace `exit 100` with `exit 0` at line `285` and `421`, then apply upgrade. af
 
 3.In xubuntu 14.04.1 there's another bug: Can't open /scripts/casper-functions" error) to fix this, run this code in chroot:
 
-```
+```sh
 ln -s /usr/share/initramfs-tools/scripts /scripts
 ```
 
@@ -198,7 +207,7 @@ https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
 One should be solved by editing:
 
-```
+```sh
 /var/lib/dpkg/info/whoopsie.prerm
 /var/lib/dpkg/info/libpam-systemd\:amd64.prerm
 /var/lib/dpkg/info/libpam-systemd\:amd64.postinst
@@ -208,14 +217,14 @@ One should be solved by editing:
 
 Other one should be solved by editing:
 
-```
+```sh
 /etc/kernel/postrm.d/zz-update-grub
 /etc/kernel/postinst.d/zz-update-grub
 ```
 
 find the following and comment out the if and fi line: 
 
-```
+```sh
 if [ -e /boot/grub/grub.cfg ]; then
    #exec update-grub
 fi
@@ -229,12 +238,12 @@ https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
 5.You may encounter another bug: `Ubiquity installer, hang/freeze on harddisk detection`. This bug can be solved by editing the file `edit/usr/share/applications/ubiquity-gtkui.desktop` and changing the section `exex` from
 
-```
+```sh
 sh -c 'ubiquity gtk_ui'
 ```
 
 to 
 
-```
+```sh
 sh -c 'sudo ubiquity gtk_ui'
 ```

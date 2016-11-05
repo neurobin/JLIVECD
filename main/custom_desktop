@@ -284,6 +284,24 @@ if grep -sq '^FastCompression=' $liveconfigfile;then
 else
     echo "FastCompression=$choice1" >> $liveconfigfile
 fi
+#check for uefi
+uefi="$(grep -soP '(?<=^UEFI=).*' "$liveconfigfile")"
+read -t $timeout -p "......Want UEFI image (Y/n)? (default '$uefi'): " choice2
+[[ $choice2 == "" ]] && choice2="$uefi"
+if grep -sq '^UEFI=' $liveconfigfile;then
+   sed -r -i.bak "s/(^UEFI=).*/\1$choice2/" $liveconfigfile
+else
+    echo "UEFI=$choice2" >> $liveconfigfile
+fi
+#check for hybrid
+hybrid="$(grep -soP '(?<=^Hybrid=).*' "$liveconfigfile")"
+read -t $timeout -p "......Want hybrid image (Y/n)? (default '$hybrid'): " choice3
+[[ $choice3 == "" ]] && choice3="$hybrid"
+if grep -sq '^Hybrid=' $liveconfigfile;then
+   sed -r -i.bak "s/(^Hybrid=).*/\1$choice3/" $liveconfigfile
+else
+    echo "Hybrid=$choice3" >> $liveconfigfile
+fi
 echo -e "\n......Updating some required files..."
 ###############################Create CD/DVD##############################################################################
 cd "$livedir"
@@ -315,10 +333,17 @@ if [ -f "md5sum.txt" ]; then
   find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat | tee md5sum.txt
 fi
 echo -e "\n......Creating the image......"
-mkisofs -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
+if [[ $choice2 == [Yy] ]];then
+    mkisofs -U -A "$IMAGE_NAME" -V "$IMAGE_NAME" -volset "$IMAGE_NAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot . && echo '......Prepared UEFI image'
+else
+    mkisofs -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
+fi
+if [[ $choice3 == [Yy] ]]; then
+    isohybrid --uefi ../"$cdname".iso && echo "...... Converted to hybrid image"
+fi
 cd ..
 echo -e "\n.....Finalizing image....."
 chmod 777 "$cdname".iso
-echo -e "\n......Congratulations! Customized cd/dvd creation completed......."
-read -p ".......press enter to exit........." enter
+echo -e "\n......All done. Check the result........"
+read -p ".......Press enter to exit........." enter
 exit 0
