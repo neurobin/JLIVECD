@@ -5,7 +5,6 @@ Customized ISOs for personal use are fine. If you want to share your customizati
 You're free to use the softwares without renaming those, as they are licensed under GPL. But otherwise, it will be your own creation and no longer you base distros'.
 
 The name and identity elements of a distro are trademarked and copyrighted. Unless you have approval from appropriate authorization you can't use those (identity elements and name).
-*************************************************************************************************************************
 
 # What this is about:
 
