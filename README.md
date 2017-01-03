@@ -126,6 +126,10 @@ I call it debcache management!
 
 # ChangeLog:
 
+###version 2.1.3
+
+1. Consistency among hybrid and UEFI image.
+
 ###version 2.1.2:
 
 1. UEFI image support

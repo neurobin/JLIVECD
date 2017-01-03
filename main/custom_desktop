@@ -335,11 +335,13 @@ fi
 echo -e "\n......Creating the image......"
 if [[ $choice2 == [Yy] ]];then
     mkisofs -U -A "$IMAGE_NAME" -V "$IMAGE_NAME" -volset "$IMAGE_NAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot . && echo '......Prepared UEFI image'
+    uefi_opt=--uefi
 else
     mkisofs -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
+    uefi_opt=
 fi
 if [[ $choice3 == [Yy] ]]; then
-    isohybrid --uefi ../"$cdname".iso && echo "...... Converted to hybrid image"
+    isohybrid $uefi_opt ../"$cdname".iso && echo "...... Converted to hybrid image"
 fi
 cd ..
 echo -e "\n.....Finalizing image....."
