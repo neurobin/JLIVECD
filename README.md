@@ -98,14 +98,12 @@ Run `JLstart -db` and follow through.
 
 # Directories & Files:
 
-1. In your project directory, you will find some default directories. Don't change their names. The directories are:
-
- 1. `debcache`: `.deb` files are kept here. See the special feature section for more details.
- 2. `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
- 3. `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
- 4. `mnt`: A directory used only for mounting ISO image.
- 
-2. There's also an additional file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults for various options.
+* In your project directory, you will find some default directories. Don't change their names. The directories are:
+  * `debcache`: `.deb` files are kept here. See the special feature section for more details.
+  * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
+  * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
+  * `mnt`: A directory used only for mounting ISO image.
+* There's also an additional file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults for various options.
 
 
 
