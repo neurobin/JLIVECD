@@ -36,7 +36,7 @@ N.B: You need to modify the iso images on your own. It only renders an environme
 Install requirements with the following command:
 
 ```sh
-sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils
+sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils rsync
 ```
 
 Optionally you can keep `xterm` installed. It will work as a backup terminal in case the default terminal fails to run.
@@ -56,13 +56,15 @@ chmod +x ./install.sh
 
 # How to use:
 
+## For Ubuntu family & Linux Mint
+
 Run `JLstart` in a terminal or run it from `menu->system->JLIVECD`.
 
 <img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
 Example:
 
-```sh
+```bash
 ~$ JLstart
 
 Is this a new project: (y/n)?: n
@@ -73,6 +75,20 @@ Is this a new project: (y/n)?: n
 ```
 
 Hints are given on the go, follow them to successfully create a customized live cd/dvd.
+
+## For Debian
+
+Run `JLstart -db` and follow through.
+
+```bash
+JLstart -db
+
+Is this a new project: (y/n)?: n
+
+[sudo] password for user:
+
+...............................
+```
 
 # Directories & Files:
 
@@ -129,7 +145,7 @@ I call it debcache management!
 
 ###version 2.2.0
 
-* debian support
+* Debian support (experimental)
 
 ###version 2.1.3
 
