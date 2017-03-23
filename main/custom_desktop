@@ -4,7 +4,7 @@ cd $JLdir
 . ./defconf.sh
 . ./funcs.sh
 
-chkroot || exit 1
+chkroot
 
 if [ "$1" = -db ]; then
 	JL_debian=true;

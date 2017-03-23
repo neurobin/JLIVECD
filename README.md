@@ -145,7 +145,7 @@ I call it debcache management!
 
 ### version 2.2.0
 
-* Debian support (experimental)
+* Debian support (windows installer not supported)
 
 ### version 2.1.3
 
@@ -208,7 +208,8 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 * Xubuntu 14.04.1 LTS
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
-* Debian 8.7.1 Jessie
+* Debian (xfce) 8.7.1 Jessie
+* Debian (xfce) testing (stretch) @ Thu Mar 23 13:31:53 UTC 2017
 
 <div id="additional-info"></div>
 

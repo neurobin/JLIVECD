@@ -39,14 +39,17 @@ chknorm(){
 get_yn(){
 	#$1: msg
 	#$2: timeout
+	local msg="
+	=== $(printf "$1")"
+	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*/\t/')
 	local yn
 	if [ "$2" = "" ]; then
-		read -p "$1" yn
+		read -p "$msg" yn >/dev/null
 	else
 	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
 	        err_exit "invalid timeout value: $timeout"
 	    fi
-		read -t "$2" -p "=== $1" yn
+		read -t "$2" -p "$msg" yn >/dev/null
 	fi
 	if [ "$yn" = y ]; then
 		echo y > /dev/stdout
@@ -58,14 +61,17 @@ get_yn(){
 get_input(){
 	#$1: msg
 	#$2: timeout
+	local msg="
+	=== $(printf "$1")"
+	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*/\t/')
 	local inp
 	if [ "$2" = "" ]; then
-		read -p "$1" inp
+		read -p "$msg" inp >/dev/null
 	else
 	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
 	        err_exit "invalid timeout value: $timeout"
 	    fi
-		read -t "$2" -p "=== $1" inp
+		read -t "$2" -p "$msg" inp >/dev/null
 	fi
 	echo "$inp" > /dev/stdout
 }
@@ -187,7 +193,7 @@ jl_clean(){
 	chroot edit umount /dev/pts
 	umount edit/dev || umount -lf edit/dev
 	rm -f "$JL_lockF"
-	msg_out -e "You have $timeout seconds each to answere the following questions:\nif not answered, I will take 'n' as default (be ready).\nSome default may be different due to previous choice.\n"
+	msg_out "You have $timeout seconds each to answere the following questions:\nif not answered, I will take 'n' as default (be ready).\nSome default may be different due to previous choice.\n"
 	home=$(get_yn "Want to retain edit/home directory? (y/n)? (default '$homec'): " $timeout)
 	[ "$home" = "" ] && home=$homec
 	if [  "$home" = Y ] || [ "$home" = y ]; then
@@ -405,7 +411,7 @@ jlcd_start(){
 	fi
 	[ "$xh" = "" ] && xh="$dxhost"
 	if grep -sq '^xhost=' $liveconfigfile; then
-	   sed -r -i.bak "s/(^xhost=).*/\1$xh/" $liveconfigfile
+	   sed -r -i.bak "s/(^xhost=).*/\1$xh/" "$liveconfigfile"
 	else
 		echo "xhost=$xh" >> $liveconfigfile
 	fi
@@ -467,16 +473,16 @@ jlcd_start(){
 	  read -e -p "Enter the name for vmlinuz: " vmlinuz
 	  vmlinuz="extracted/$JL_casper/$vmlinuz"
 	fi
-	d=1
+	d=2
 	ker=""
 	msg_out "Kernel related Qs"
 	ker="$(get_yn "Have you installed new kernel and want to boot the new kernel in live cd/dvd: (y/n)?: " $timeout)"
-	if [ "$ker" != "y" ] && [ "$ker" != "Y" ]; then
-		d=2
+	if [ "$ker" = "y" ] || [ "$ker" = "Y" ]; then
+		d=1
 	fi
 	while [ $d -eq 1 ]
 	do
-	  kerver="$(get_input "Enter the kernel version (take your time on this one): " $timeout)"
+	  kerver="$(get_input "Enter the kernel version (take your time on this one): ")"
 	  vmlinuz_path=edit/boot/vmlinuz-"$kerver"
 	  initrd_path=edit/boot/initrd.img-"$kerver"
 	  if [ -f "$vmlinuz_path" ]; then
