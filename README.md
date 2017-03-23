@@ -30,7 +30,8 @@ N.B: You need to modify the iso images on your own. It only renders an environme
 2. squashfs-tools
 3. genisoimage
 4. syslinux, syslinux-utils (If you want hybrid ISO image)
-5. xterm (optional)
+5. rsync
+6. xterm (optional)
 
 Install requirements with the following command:
 
@@ -126,6 +127,10 @@ I call it debcache management!
 
 # ChangeLog:
 
+###version 2.2.0
+
+* debian support
+
 ###version 2.1.3
 
 1. Consistency among hybrid and UEFI image.
@@ -187,6 +192,7 @@ As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will tak
 * Xubuntu 14.04.1 LTS
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
+* Debian 8.7.1 Jessie
 
 <div id="additional-info"></div>
 

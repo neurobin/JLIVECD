@@ -5,8 +5,9 @@ chmod -R 755 *
 mkdir -p /usr/local/JLIVECD
 cp -R ./* /usr/local/JLIVECD/
 chmod -R 755 /usr/local/JLIVECD
-cp JLstart /bin
-cp JLopt /bin
+chmod 777 /usr/local/JLIVECD
+ln -sf /usr/local/JLIVECD/JLstart /bin
+ln -sf /usr/local/JLIVECD/JLopt /bin
 echo "[Desktop Entry]
 Name=JLIVECD
 Type=Application

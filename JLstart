@@ -1,17 +1,54 @@
 #!/bin/bash
 cd "$(dirname "$BASH_SOURCE")"
-if [ "$(id -u)" == "0" ]; then
-  echo -e ".....Run this as a normal user, not root....."
-  exit 1
+
+export JLdir=/usr/local/JLIVECD
+cd $JLdir
+. ./main/defconf.sh
+. ./funcs.sh
+mkdir -p "$JL_logdirtmp"
+
+
+trap finish EXIT
+trap finish SIGTERM
+
+rn=false
+while [[ $# > 0 ]]
+do
+    case "$1" in
+
+        -db|--debian)
+            JL_debian=true;
+            JL_casper=live
+            JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+            ;;
+        -h|--help|*)
+            echo "Usage:"
+            echo "    -db       debian mode"
+            echo "    -h        help menu"
+            echo "JLopt [options]"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+echo "***********************************************"
+echo "*** Don't use quotation in file/folder path ***"
+echo "***********************************************"
+
+chknorm
+
+JL_fresh=$(get_yn "Is this a new project: (y/n)?: ")
+
+echo $JL_fresh > "$JL_ynF"
+
+if [ "$JL_fresh" = y -o "$JL_fresh" = Y ]; then
+  fresh_start
 fi
-cd /usr/local/JLIVECD
-read -p "Is this a new project: (y/n)?: " control
-echo "**********************************************"
-echo "***Don't use quotation in file/folder path***"
-echo "**********************************************"
-if [ "$control" == "y" ]; then
-  ./main/fresh_start
-elif [ "$control" == "Y" ]; then
-  ./main/fresh_start
+
+if $JL_debian; then
+    sudo  ./main/custom_desktop -db
+else
+    sudo  ./main/custom_desktop
 fi
-sudo ./main/custom_desktop
+

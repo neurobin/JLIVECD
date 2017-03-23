@@ -1,17 +1,14 @@
 #!/bin/bash
-BASEDIR="$(dirname "$BASH_SOURCE")"
-cd "$BASEDIR"
-if [ -f "/usr/local/JLIVECD/main/dirn" ]; then
-  livedir="$(cat /usr/local/JLIVECD/main/dirn)"
+JLIVEdirF=/usr/local/JLIVECD/JLIVEdir
+if [ -f "$JLIVEdirF" ]; then
+  livedir="$(cat "$JLIVEdirF")"
 else
-  echo "........May be this your fresh start, run JLstart instead.........."
+  echo "May be this is a new project, run JLstart instead"
   exit 1
 fi
 cd "$livedir"
-echo "......Preparing network connection for chroot in $livedir....."
-cp /run/resolvconf/resolv.conf edit/run/resolvconf/ &&
-cp /etc/hosts edit/etc/ &&
-chroot edit ln -sf /run/resolvconf/resolv.conf /etc/ &&
-echo "......Network connection shlould be available in chroot now....." ||
-echo "------Failed to refresh network."
-
+echo "Preparing network connection for chroot in $livedir..."
+cp /etc/hosts edit/etc/
+rm edit/etc/resolv.conf
+cp -L /etc/resolv.conf edit/etc/
+echo "Network connection shlould be available in chroot now....."
