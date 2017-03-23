@@ -1,0 +1,23 @@
+#!/bin/bash
+export JLdir=/usr/local/JLIVECD
+cd $JLdir
+. ./defconf.sh
+. ./funcs.sh
+
+chkroot || exit 1
+
+if [ "$1" = -db ]; then
+	JL_debian=true;
+	JL_casper=live
+	JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+fi
+
+yn="$(cat "$JL_ynF")"
+
+if [ "$yn" = y -o "$yn" = Y ]; then
+	JL_fresh=y
+else
+	JL_fresh=n
+fi
+
+jlcd_start ${1+"$@"}

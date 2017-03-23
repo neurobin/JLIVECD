@@ -3,6 +3,7 @@ cd "$(dirname "$BASH_SOURCE")"
 sudo -sk <<EOF
 chmod -R 755 *
 mkdir -p /usr/local/JLIVECD
+find /usr/local/JLIVECD -type f ! -name JLIVEdir ! -name JLIVEisopath -delete
 cp -R ./* /usr/local/JLIVECD/
 chmod -R 755 /usr/local/JLIVECD
 chmod 777 /usr/local/JLIVECD

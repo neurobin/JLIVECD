@@ -118,7 +118,7 @@ fresh_start(){
 	maindir="$PWD"
 	c=1
 	d=1
-	while [ $c == 1 ]
+	while [ $c -eq 1 ]
 	do
 	  c=2
 	  livedir="$(get_input "Where do you want to save your project ? Choose a directory where you have full permission. Enter path: ")" 
@@ -131,7 +131,7 @@ fresh_start(){
 	done
 	cd "$livedir"
 	[ -d mnt ] && wrn_out "$livedir/mnt Exists, Content will be overwritten" || mkdir mnt
-	while [ $d == 1 ]
+	while [ $d -eq 1 ]
 	do
 	  d=2
 	  isopath="$(get_input "Enter the path to your base iso image: ")" 
@@ -300,7 +300,7 @@ jlcd_start(){
 		msg_out "If you just hit enter it will take your previous choice (if any)"
 		livedir="$(get_input "Enter the directory path where you have saved your project: ")"
 		livedir="$(expand_path "$livedir")"
-		if [ "$livedir" == "" ]; then
+		if [ "$livedir" = "" ]; then
 		  if [ -f "$JLIVEdirF" ]; then
 		    livedir="$(cat "$JLIVEdirF")"
 		    msg_out "previous: $livedir"
@@ -503,7 +503,7 @@ jlcd_start(){
 	  else
 		wrn_out "couldn't find the specified kernel!\nEnter n to skip or enter the right version"
 	  fi
-	  if [ "$kerver" = "n" ] || [ "$kerver" == "N" ]; then
+	  if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
 		d=2
 	  fi
 	done
@@ -536,7 +536,7 @@ jlcd_start(){
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
-	chmod +w extracted/$JL_casper/filesystem.manifest
+	chmod +w extracted/$JL_casper/filesystem.manifest 2>/dev/null
 	chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/$JL_casper/filesystem.manifest
 	cp extracted/$JL_casper/filesystem.manifest extracted/$JL_casper/filesystem.manifest-desktop
 	sed -i '/ubiquity/d' extracted/$JL_casper/filesystem.manifest-desktop

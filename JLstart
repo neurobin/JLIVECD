@@ -3,7 +3,7 @@ cd "$(dirname "$BASH_SOURCE")"
 
 export JLdir=/usr/local/JLIVECD
 cd $JLdir
-. ./main/defconf.sh
+. ./defconf.sh
 . ./funcs.sh
 mkdir -p "$JL_logdirtmp"
 
