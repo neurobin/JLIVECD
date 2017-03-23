@@ -66,8 +66,11 @@ Example:
 
 ```bash
 ~$ JLstart
+***********************************************
+*** Don't use quotation in file/folder path ***
+***********************************************
 
-Is this a new project: (y/n)?: n
+=== Is this a new project: (y/n)?: n
 
 [sudo] password for user:
 
@@ -82,8 +85,11 @@ Run `JLstart -db` and follow through.
 
 ```bash
 ~$ JLstart -db
+***********************************************
+*** Don't use quotation in file/folder path ***
+***********************************************
 
-Is this a new project: (y/n)?: n
+=== Is this a new project: (y/n)?: n
 
 [sudo] password for user:
 

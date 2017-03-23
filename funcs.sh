@@ -41,7 +41,7 @@ get_yn(){
 	#$2: timeout
 	local msg="
 	=== $(printf "$1")"
-	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*/\t/')
+	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*//')
 	local yn
 	if [ "$2" = "" ]; then
 		read -p "$msg" yn >/dev/null
@@ -63,7 +63,7 @@ get_input(){
 	#$2: timeout
 	local msg="
 	=== $(printf "$1")"
-	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*/\t/')
+	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*//')
 	local inp
 	if [ "$2" = "" ]; then
 		read -p "$msg" inp >/dev/null
