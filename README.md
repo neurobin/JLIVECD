@@ -8,7 +8,7 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 
 # What this is about:
 
-This is a simple command line tool to customize live cd/dvd of ubuntu based distros, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
+This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
 https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
 
 N.B: You need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image.
@@ -51,7 +51,7 @@ give the `install.sh` file execution permission and run it in terminal.
 
 ```sh
 chmod +x ./install.sh
-./install.sh    # or you can just drag & drop in terminal
+sudo ./install.sh
 ```
 
 # How to use:
