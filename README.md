@@ -81,7 +81,7 @@ Hints are given on the go, follow them to successfully create a customized live 
 Run `JLstart -db` and follow through.
 
 ```bash
-JLstart -db
+~$ JLstart -db
 
 Is this a new project: (y/n)?: n
 
@@ -143,26 +143,26 @@ I call it debcache management!
 
 # ChangeLog:
 
-###version 2.2.0
+### version 2.2.0
 
 * Debian support (experimental)
 
-###version 2.1.3
+### version 2.1.3
 
 1. Consistency among hybrid and UEFI image.
 
-###version 2.1.2:
+### version 2.1.2:
 
 1. UEFI image support
 2. Hybrid image support
 
-###version 2.1.1:
+### version 2.1.1:
 
 1. fix `$HOME` and `$LC_ALL` in chroot
 2. chroot preparation is done in the same terminal window as chroot.
 3. Aaccess control management (xhost)
 
-###version 2.1.0:
+### version 2.1.0:
 
 1. You can change default terminals without applying patch to the source code.
 2. It now remembers several project-wise options (delete home directory?, fast compression?, etc..).
@@ -174,19 +174,19 @@ I call it debcache management!
 8. Docs updated.
 
 
-###version 2.0.6:
+### version 2.0.6:
 
 1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
 2. Docs updated.
 
-###version 2.0.5:
+### version 2.0.5:
 
 1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version >=2.0.4 can be safely updated to any later version.
 2. Added another compression method (fast compression).
 3. Minor potential bug fixes.
 4. Docs updated.
 
-###version 2.0:
+### version 2.0:
 
 1.You can use short cut in names for path to base iso i.e xubuntu for xubuntu-14.04.1-x64.iso, if there is no other file named "xubuntu" in the same folder. You can even use only x if there is no other file starting with x in the same folder.
 
