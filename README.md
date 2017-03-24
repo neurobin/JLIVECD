@@ -149,7 +149,7 @@ I call it debcache management!
 
 # ChangeLog:
 
-### version 2.2.0
+### version 2.2.1
 
 * Debian support (windows installer not supported)
 
