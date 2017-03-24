@@ -37,7 +37,7 @@ chknorm(){
 }
 
 mode_select(){
-	PS3='Please select a mode (#): '
+	PS3='Please select a mode (#?): '
 	opts="Ubuntu Debian"
 	select opt in $opts; do #must not double quote
 		case $opt in

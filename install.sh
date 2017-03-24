@@ -1,12 +1,10 @@
 #!/bin/bash
 cd "$(dirname "$BASH_SOURCE")"
 sudo -sk <<EOF
-chmod -R 755 *
 mkdir -p /usr/local/JLIVECD
-find /usr/local/JLIVECD -type f ! -name JLIVEdir ! -name JLIVEisopath -delete
 cp -R ./* /usr/local/JLIVECD/
-chmod -R 755 /usr/local/JLIVECD
-chmod 777 /usr/local/JLIVECD
+chmod -R 777 /usr/local/JLIVECD
+chmod 755 /usr/local/JLIVECD/JLstart /usr/local/JLIVECD/JLopt /usr/local/JLIVECD/main/custom_desktop /usr/local/JLIVECD/main/preparechroot /usr/local/JLIVECD/main/help
 ln -sf /usr/local/JLIVECD/JLstart /bin
 ln -sf /usr/local/JLIVECD/JLopt /bin
 echo "[Desktop Entry]

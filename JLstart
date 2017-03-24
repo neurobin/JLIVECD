@@ -46,7 +46,11 @@ chknorm
 
 #if live_os is not given, then force to select one:
 if [ "$live_os" = "" ]; then
-	msg_out "For Ubuntu family & Linux Mint select ubuntu mode\n*** and for debian select debian mode."
+    echo
+    echo "***************** MODE SELECT *****************"
+    echo "* For Ubuntu family & Linux Mint: ubuntu mode *"
+    echo "* For Debian:                     debian mode *"
+    echo "***********************************************"
 	live_os=$(mode_select)
 fi
 
