@@ -184,15 +184,34 @@ fresh_start(){
 	cd "$maindir"
 }
 
+rebuild_initrd(){
+    initrd="$1"
+    kerver="$2"
+    mv edit/"$initrd" edit/"$initrd".old.link
+    msg_out "Rebuilding initrd..."
+    mount --bind /dev/ edit/dev
+    chroot edit mount -t proc none /proc
+    chroot edit mount -t sysfs none /sys
+    chroot edit mount -t devpts none /dev/pts
+    chroot edit mkinitramfs -o /"$initrd" "$kerver"
+    chroot edit umount /proc || chroot edit umount -lf /proc
+    chroot edit umount /sys
+    chroot edit umount /dev/pts
+    umount edit/dev || umount -lf edit/dev
+    mv edit/"$initrd" extracted/"$JL_casper"/
+    mv edit/"$initrd".old.link edit/"$initrd"
+    msg_out "initrd rebuilt successfully!"
+}
+
 jl_clean(){
 	kerver=$(uname -r)
 	livedir="$(cat "$JLIVEdirF")"
 	liveconfigfile="$livedir/.config"
 	timeout="$(grep -soP '(?<=^timeout=).*' "$JL_configfile")"
 	if echo "$timeout" |grep -E '^[0-9]+$'; then
-	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
+	  timeout=$(echo "$timeout" |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
-	  timeout=$JL_timeoutd
+	  timeout="$JL_timeoutd"
 	fi
 	homec="$(grep -soP '(?<=^RetainHome=).*' "$liveconfigfile")"
 	[ "$homec" = Y ] || [ "$homec" = y ] || homec="n"
@@ -219,10 +238,10 @@ jl_clean(){
 	  rm -rf edit/home/*
 	  msg_out "edit/home cleaned!"
 	fi
-	if grep -sq '^RetainHome=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^RetainHome=).*/\1$home/" $liveconfigfile
+	if grep -sq '^RetainHome=' "$liveconfigfile";then
+	   sed -r -i.bak "s/(^RetainHome=).*/\1$home/" "$liveconfigfile"
 	else
-		echo "RetainHome=$home" >> $liveconfigfile
+		echo "RetainHome=$home" >> "$liveconfigfile"
 	fi
 	msg_out "initrd archive type: $initrd detected!"
 	msg_out "Rebuilding initrd!\n*** this step is needed if you have modified the kernel module, or init scripts.\n*** If you have installed new kernel and want to boot that kernel then skip this for now"
@@ -235,17 +254,7 @@ jl_clean(){
 	while [ $c -eq 1 ]
 	do
 	  if [ -d "edit/lib/modules/$kerver" ]; then
-		msg_out "Rebuilding initrd..."
-		mount --bind /dev/ edit/dev
-		chroot edit mount -t proc none /proc
-		chroot edit mount -t sysfs none /sys
-		chroot edit mount -t devpts none /dev/pts
-		chroot edit mkinitramfs -o /"$initrd" "$kerver"
-		msg_out "initrd rebuilt successfully!"
-		chroot edit umount /proc || chroot edit umount -lf /proc
-		chroot edit umount /sys
-		chroot edit umount /dev/pts
-		umount edit/dev || umount -lf edit/dev
+		rebuild_initrd "$initrd" "$kerver"
 		c=2
 	  else
 		kerver="$(get_input "Enter live system kernel version (n to skip/default, take your time on this one): ")"
@@ -256,6 +265,7 @@ jl_clean(){
 	done
 
 }
+
 
 jlcd_start(){
 	if $JL_debian; then
@@ -290,18 +300,17 @@ jlcd_start(){
 	fi
 
 	if [ -f "$JLIVEdirF" ]; then
-	  livedir="$(cat $JLIVEdirF)"
+	  livedir="$(cat "$JLIVEdirF")"
 	fi
 
 	c=1
 	if [ "$yn" = "y" ]; then
 	  c=2
 	  cd "$livedir"
-	  isopath="$(cat $JLIVEisopathF)"
+	  isopath="$(cat "$JLIVEisopathF")"
 	  if [ -d edit ]; then
 		wrn_out "seems this isn't really a new project (edit directory exists),\nexisting files will be overwritten!!!\n if you aren't sure what this warning is about, close this terminal and run again. \nIf this is shown again, enter y and continue..."
 		cont=$(get_yn "Are you sure, you want to continue (y/n)?: " $timeout)
-		echo $cont
 		if [  "$cont" = "y" ] || [ "$cont" = "Y" ]; then
 		  msg_out "OK"
 		else
@@ -310,8 +319,8 @@ jlcd_start(){
 		fi
 	  fi
 	  mount -o loop "$isopath" mnt || wrn_out "failed to mount iso."
-	  rsync --exclude=/$JL_casper/filesystem.squashfs -a mnt/ extracted || err_exit "rsync failed"
-	  unsquashfs mnt/$JL_casper/filesystem.squashfs || err_exit "unsquashfs failed"
+	  rsync --exclude=/"$JL_casper"/filesystem.squashfs -a mnt/ extracted || err_exit "rsync failed"
+	  unsquashfs mnt/"$JL_casper"/filesystem.squashfs || err_exit "unsquashfs failed"
 	  mv squashfs-root edit || err_exit "couldn't move squashfs-root."
 	  umount mnt
 	fi
@@ -369,10 +378,10 @@ jlcd_start(){
 		msg_out "\n*** Using 'New-Disk' as cd/dvd name"
 	  fi
 	fi
-	if grep -sq '^DiskName=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^DiskName=).*/\1$(sed_fxrs "$cdname")/" $liveconfigfile
+	if grep -sq '^DiskName=' "$liveconfigfile";then
+	   sed -r -i.bak "s/(^DiskName=).*/\1$(sed_fxrs "$cdname")/" "$liveconfigfile"
 	else
-		echo "DiskName=$cdname" >> $liveconfigfile
+		echo "DiskName=$cdname" >> "$liveconfigfile"
 	fi
 	##############################Copy some required files#####################################################################
 	cp main/preparechroot "$livedir"/edit/prepare
@@ -430,7 +439,7 @@ jlcd_start(){
 	if grep -sq '^xhost=' $liveconfigfile; then
 	   sed -r -i.bak "s/(^xhost=).*/\1$xh/" "$liveconfigfile"
 	else
-		echo "xhost=$xh" >> $liveconfigfile
+		echo "xhost=$xh" >> "$liveconfigfile"
 	fi
 	if [ "$xh" != Y ] && [ "$xh" != y ]; then
 		xhost +
@@ -467,7 +476,7 @@ jlcd_start(){
 	jl_clean
 	rm -f "$JL_lockF"
 	if [ -f "edit/$initrd" ]; then
-	  mv edit/"$initrd" extracted/$JL_casper/
+	  cp -L edit/"$initrd" extracted/"$JL_casper"/
 	else
 	  msg_out "Assuming: you haven't modified the kernel modules or init scripts"
 	fi
@@ -487,7 +496,7 @@ jlcd_start(){
 	  msg_out "vmlinuz found: $vmlinuz"
 	else
 	  msg_out "Couldn't find vmlinuz!"
-	  read -e -p "Enter the name for vmlinuz: " vmlinuz
+	  vmlinuz=$(get_input "Enter the name of vmlinuz: ")
 	  vmlinuz="extracted/$JL_casper/$vmlinuz"
 	fi
 	d=2
@@ -505,19 +514,8 @@ jlcd_start(){
 	  if [ -f "$vmlinuz_path" ]; then
 		if [ -f "$initrd_path" ]; then
 		  cp edit/boot/vmlinuz-"$kerver" "$vmlinuz"
-		  cp edit/boot/initrd.img-"$kerver" extracted/$JL_casper/"$initrd"
-		  msg_out "Rebuilding initrd..."
-		  mount --bind /dev/ edit/dev
-		  chroot edit mount -t proc none /proc
-		  chroot edit mount -t sysfs none /sys
-		  chroot edit mount -t devpts none /dev/pts
-		  chroot edit mkinitramfs -o /"$initrd" "$kerver"
-		  msg_out "initrd rebuilt successfully!"
-		  chroot edit umount /proc || chroot edit umount -lf /proc
-		  chroot edit umount /sys
-		  chroot edit umount /dev/pts
-		  umount edit/dev || umount -lf edit/dev
-		  mv edit/"$initrd" extracted/$JL_casper/
+		#   cp edit/boot/initrd.img-"$kerver" extracted/$JL_casper/"$initrd"
+		  rebuild_initrd "$initrd" "$kerver"
 		  msg_out "kernel updated successfully!"
 		  d=2
 		else
@@ -533,49 +531,49 @@ jlcd_start(){
 	fastcomp="$(grep -soP '(?<=^FastCompression=).*' "$liveconfigfile")"
 	choice1=$(get_yn "Use fast compression (ISO size may become larger) (Y/n)? (default '$fastcomp'): " $timeout)
 	[ "$choice1" = "" ] && choice1="$fastcomp"
-	if grep -sq '^FastCompression=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^FastCompression=).*/\1$choice1/" $liveconfigfile
+	if grep -sq '^FastCompression=' "$liveconfigfile";then
+	   sed -r -i.bak "s/(^FastCompression=).*/\1$choice1/" "$liveconfigfile"
 	else
-		echo "FastCompression=$choice1" >> $liveconfigfile
+		echo "FastCompression=$choice1" >> "$liveconfigfile"
 	fi
 	#check for uefi
 	uefi="$(grep -soP '(?<=^UEFI=).*' "$liveconfigfile")"
 	choice2=$(get_yn "Want UEFI image (Y/n)? (default '$uefi'): " $timeout)
 	[ "x$choice2" = "x" ] && choice2="$uefi"
 	if grep -sq '^UEFI=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^UEFI=).*/\1$choice2/" $liveconfigfile
+	   sed -r -i.bak "s/(^UEFI=).*/\1$choice2/" "$liveconfigfile"
 	else
 		echo "UEFI=$choice2" >> $liveconfigfile
 	fi
 	#check for hybrid
 	hybrid="$(grep -soP '(?<=^Hybrid=).*' "$liveconfigfile")"
 	choice3=$(get_yn "Want hybrid image (Y/n)? (default '$hybrid'): " $timeout)
-	[ $choice3 = "" ] && choice3="$hybrid"
-	if grep -sq '^Hybrid=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^Hybrid=).*/\1$choice3/" $liveconfigfile
+	[ "$choice3" = "" ] && choice3="$hybrid"
+	if grep -sq '^Hybrid=' "$liveconfigfile";then
+	   sed -r -i.bak "s/(^Hybrid=).*/\1$choice3/" "$liveconfigfile"
 	else
-		echo "Hybrid=$choice3" >> $liveconfigfile
+		echo "Hybrid=$choice3" >> "$liveconfigfile"
 	fi
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
-	chmod +w extracted/$JL_casper/filesystem.manifest 2>/dev/null
-	chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/$JL_casper/filesystem.manifest
-	cp extracted/$JL_casper/filesystem.manifest extracted/$JL_casper/filesystem.manifest-desktop
-	sed -i '/ubiquity/d' extracted/$JL_casper/filesystem.manifest-desktop
-	sed -i "/$JL_casper/d" extracted/$JL_casper/filesystem.manifest-desktop
-	rm -f extracted/$JL_casper/filesystem.squashfs
+	chmod +w extracted/"$JL_casper"/filesystem.manifest 2>/dev/null
+	chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/"$JL_casper"/filesystem.manifest
+	cp extracted/"$JL_casper"/filesystem.manifest extracted/"$JL_casper"/filesystem.manifest-desktop
+	sed -i '/ubiquity/d' extracted/"$JL_casper"/filesystem.manifest-desktop
+	sed -i "/"$JL_casper"/d" extracted/"$JL_casper"/filesystem.manifest-desktop
+	rm -f extracted/"$JL_casper"/filesystem.squashfs
 	msg_out "Deleted old filesystem.squashfs.."
 	msg_out "Rebuilding filesystem.squashfs.."
 	if [ "$choice1" = Y ] || [ "$choice1" = y ];then
 	  msg_out "Using fast compression. Size may become larger"
-	  mksquashfs edit extracted/$JL_casper/filesystem.squashfs -b 1048576
+	  mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -b 1048576
 	else
 	  msg_out "Using exhaustive compression. Size may become lesser"
-	  #mksquashfs edit extracted/$JL_casper/filesystem.squashfs -comp xz
-	  mksquashfs edit extracted/$JL_casper/filesystem.squashfs -comp xz -e edit/boot
+	  #mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -comp xz
+	  mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -comp xz -e edit/boot
 	fi
-	printf $(du -sx --block-size=1 edit | cut -f1) > extracted/$JL_casper/filesystem.size
+	printf $(du -sx --block-size=1 edit | cut -f1) > extracted/"$JL_casper"/filesystem.size
 	cd extracted
 	msg_out "Updating md5sums"
 	if [ -f "MD5SUMS" ]; then

@@ -27,8 +27,7 @@ JLopt [options]
 -t   : set timeout
 -h   : show help menu.
 "
-logdir="$HOME/.neurobin/JLIVECD"
-mkdir -p "$logdir"
+logdir="/usr/local/JLIVECD"
 configfile="$logdir/.config"
 
 opts=( "$@" )
