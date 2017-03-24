@@ -11,21 +11,27 @@ mkdir -p "$JL_logdirtmp"
 trap finish EXIT
 trap finish SIGTERM
 
-rn=false
+live_os=
 while [[ $# > 0 ]]
 do
     case "$1" in
-
+    	-ub|--ubuntu)
+    		live_os=ubuntu
+    		;;
         -db|--debian)
-            JL_debian=true;
-            JL_casper=live
-            JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+        	live_os=debian
+            ;;
+        -v|--version)
+        	JLopt --version
+        	exit 0
             ;;
         -h|--help|*)
             echo "Usage:"
+            echo "	  -ub		ubuntu mode"
             echo "    -db       debian mode"
             echo "    -h        help menu"
-            echo "JLopt [options]"
+            echo "    -v		version info"
+            echo "See JLopt -h for other usage."
             exit 1
             ;;
     esac
@@ -37,6 +43,19 @@ echo "*** Don't use quotation in file/folder path ***"
 echo "***********************************************"
 
 chknorm
+
+#if live_os is not given, then force to select one:
+if [ "$live_os" = "" ]; then
+	msg_out "For Ubuntu family & Linux Mint select ubuntu mode\n*** and for debian select debian mode."
+	live_os=$(mode_select)
+fi
+
+if [ "$live_os" = debian ]; then
+    JL_debian=true;
+    JL_casper=live
+    JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+fi
+
 
 JL_fresh=$(get_yn "Is this a new project: (y/n)?: ")
 
@@ -51,4 +70,3 @@ if $JL_debian; then
 else
     sudo  ./main/custom_desktop
 fi
-
