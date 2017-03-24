@@ -71,7 +71,7 @@ get_yn(){
 	if [ "$yn" = y ]; then
 		echo y > /dev/stdout
 	else
-		echo n > /dev/stdout
+		echo '' > /dev/stdout
 	fi
 }
 
@@ -144,7 +144,7 @@ fresh_start(){
 	while [ $c -eq 1 ]
 	do
 	  c=2
-	  livedir="$(get_input "Where do you want to save your project ? Choose a directory where you have full permission. Enter path: ")" 
+	  livedir="$(get_input "Where do you want to save your project ? Choose a directory where you have full permission. Enter path: ")"
 	  livedir="$(expand_path "$livedir")"
 	  [ -d "$livedir" ] && wrn_out "$livedir exists, content will be overwritten" || mkdir -p "$livedir"
 	  if [ ! -d "$livedir" ]; then
@@ -157,7 +157,7 @@ fresh_start(){
 	while [ $d -eq 1 ]
 	do
 	  d=2
-	  isopath="$(get_input "Enter the path to your base iso image: ")" 
+	  isopath="$(get_input "Enter the path to your base iso image: ")"
 	  isopath="$(expand_path "$isopath")"
 	  isofullpath=("${isopath}"*)
 	  if [ -f "$isofullpath" ]; then
@@ -169,7 +169,7 @@ fresh_start(){
 		else
 		  d=1
 		  wrn_out "selected file isn't an ISO image: $isofullpath"
-		fi 
+		fi
 	  elif [ -f "$isofullpath.iso" ]; then
 		msg_out "Found iso: $isofullpath.iso"
 		echo "$isofullpath".iso > "$JLIVEisopathF"
@@ -195,7 +195,7 @@ jl_clean(){
 	  timeout=$JL_timeoutd
 	fi
 	homec="$(grep -soP '(?<=^RetainHome=).*' "$liveconfigfile")"
-	[ "$homec" = Y ] || [ "$homec" = y ] || homec="n" 
+	[ "$homec" = Y ] || [ "$homec" = y ] || homec="n"
 	cd "$livedir"
 	initrd="$(cat edit/initrd)"
 	rm -f edit/run/synaptic.socket
@@ -205,7 +205,7 @@ jl_clean(){
 	chroot edit rm /var/lib/dbus/machine-id
 	chroot edit rm /sbin/initctl
 	chroot edit dpkg-divert --rename --remove /sbin/initctl 2>/dev/null
-	chroot edit umount /proc || chroot edit umount -lf /proc 
+	chroot edit umount /proc || chroot edit umount -lf /proc
 	chroot edit umount /sys
 	chroot edit umount /dev/pts
 	umount edit/dev || umount -lf edit/dev
@@ -242,7 +242,7 @@ jl_clean(){
 		chroot edit mount -t devpts none /dev/pts
 		chroot edit mkinitramfs -o /"$initrd" "$kerver"
 		msg_out "initrd rebuilt successfully!"
-		chroot edit umount /proc || chroot edit umount -lf /proc 
+		chroot edit umount /proc || chroot edit umount -lf /proc
 		chroot edit umount /sys
 		chroot edit umount /dev/pts
 		umount edit/dev || umount -lf edit/dev
@@ -267,7 +267,7 @@ jlcd_start(){
 	JL_terminal2="$(grep -soP '(?<=^terminal2=).*' "$JL_configfile")"
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
-	
+
 	if [ -f "$JL_lockf" ]; then
 	  err_out "another instance of this section is running\n or premature shutdown detected from a previous run\nYou need to finish that first or force your way through..."
 	  force=$(get_yn "Force start..(y/n)?: " 10)
@@ -277,22 +277,22 @@ jlcd_start(){
 	  fi
 	fi
 	echo "1" > "$JL_lockF"
-	
+
 	maindir="$PWD"
 	yn="$JL_fresh"
 	livedir=""
-	
+
 	timeout="$(grep -soP '(?<=^timeout=).*' "$JL_configfile")"
 	if echo "$timeout" |grep -E '^[0-9]+$'; then
 	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
 	  timeout=$JL_timeoutd
 	fi
-	
+
 	if [ -f "$JLIVEdirF" ]; then
 	  livedir="$(cat $JLIVEdirF)"
 	fi
-	
+
 	c=1
 	if [ "$yn" = "y" ]; then
 	  c=2
@@ -334,7 +334,7 @@ jlcd_start(){
 	  fi
 	  if [ "$livedir" != "" ]; then
 		c=2
-	  else 
+	  else
 		c=1
 		err_out "invalid directory: $livedir"
 	  fi
@@ -358,7 +358,7 @@ jlcd_start(){
 	if [ "$cdname" = "" ]; then
 	  if [ -f "$liveconfigfile" ]; then
 		cdname="$(grep -soP '(?<=^DiskName=).*' "$liveconfigfile")"
-		if [ "$cdname" = "" ]; then 
+		if [ "$cdname" = "" ]; then
 			cdname="New-Disk"
 			msg_out "Using 'New-Disk' as cd/dvd name"
 		else
@@ -513,7 +513,7 @@ jlcd_start(){
 		  chroot edit mount -t devpts none /dev/pts
 		  chroot edit mkinitramfs -o /"$initrd" "$kerver"
 		  msg_out "initrd rebuilt successfully!"
-		  chroot edit umount /proc || chroot edit umount -lf /proc 
+		  chroot edit umount /proc || chroot edit umount -lf /proc
 		  chroot edit umount /sys
 		  chroot edit umount /dev/pts
 		  umount edit/dev || umount -lf edit/dev
@@ -532,7 +532,7 @@ jlcd_start(){
 	done
 	fastcomp="$(grep -soP '(?<=^FastCompression=).*' "$liveconfigfile")"
 	choice1=$(get_yn "Use fast compression (ISO size may become larger) (Y/n)? (default '$fastcomp'): " $timeout)
-	[ "x$choice1" = "x" ] && choice1="$fastcomp"
+	[ "$choice1" = "" ] && choice1="$fastcomp"
 	if grep -sq '^FastCompression=' $liveconfigfile;then
 	   sed -r -i.bak "s/(^FastCompression=).*/\1$choice1/" $liveconfigfile
 	else
@@ -604,4 +604,3 @@ jlcd_start(){
 	read -p "Press enter to exit" enter
 	exit 0
 }
-
