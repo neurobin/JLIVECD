@@ -58,14 +58,14 @@ sudo ./install.sh
 
 ## For Ubuntu family & Linux Mint
 
-Run `JLstart` in a terminal or run it from `menu->system->JLIVECD`.
+Run `JLstart -ub` in a terminal or run it from `menu->system->JLIVECD`.
 
 <img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
 Example:
 
 ```bash
-~$ JLstart
+~$ JLstart -ub
 ***********************************************
 *** Don't use quotation in file/folder path ***
 ***********************************************
@@ -81,7 +81,7 @@ Hints are given on the go, follow them to successfully create a customized live 
 
 ## For Debian
 
-Run `JLstart -db` and follow through.
+Run `JLstart -db` in a terminal or run it from `menu->system->JLIVECD` and follow through.
 
 ```bash
 ~$ JLstart -db
