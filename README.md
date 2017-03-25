@@ -6,12 +6,11 @@ You're free to use the softwares without renaming those, as they are licensed un
 
 The name and identity elements of a distro are trademarked and copyrighted. Unless you have approval from appropriate authorization you can't use those (identity elements and name).
 
-# What this is about:
+# Description:
 
-This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on:
-https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use. This is released under GPL v2 lincense and redistrubtion is free and open complying to the licensing terms of GPL v2 license.
+This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use.
 
-N.B: You need to modify the iso images on your own. It only renders an environment for modification and finally creates the modified iso image.
+It gives you a chroot environment for modification and creates the modified iso image. You need to do all the customizations on your own, JLIVECD itself does not do any modifications.
 
 <mark>Please read through the <a href="#additional-info">Additional info</a> section before you start with a Ubuntu or Linux Mint ISO for the first time.</mark>
 
@@ -142,11 +141,11 @@ There's also a file named `.config`, which contains configuration of the corresp
 
 I call it debcache management!
 
-1. Just put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installaion process.
+1. Put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installation process.
 2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
 3. You never need to delete .deb files from *edit/var/cache/apt/archives* manually and you shouldn't.
-4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from internet.
-5. Altenatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
+4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from Internet.
+5. Alternatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
 # ChangeLog:
 

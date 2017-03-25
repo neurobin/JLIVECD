@@ -19,7 +19,7 @@ err_exit(){
 finish(){
  rm -rf "$JL_lockF" 2>/dev/null
  rm -rf "$JL_logdirtmp" 2>/dev/null
- msg_out "cleaned temporary files"
+ msg_out "END ***"
 }
 
 chkroot(){
@@ -285,7 +285,7 @@ jl_clean(){
 	chroot edit umount /dev/pts
 	umount edit/dev || umount -lf edit/dev
 	rm -f "$JL_lockF"
-	msg_out "You have $timeout seconds each to answere the following questions:\n*** if not answered, I will take 'n' as default (be ready).\n*** Some default may be different due to previous choice.\n"
+	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
 	home=$(get_yn "Want to retain edit/home directory? (y/n)? (default '$homec'): " $timeout)
 	[ "$home" = "" ] && home=$homec
 	if [  "$home" = Y ] || [ "$home" = y ]; then
@@ -300,7 +300,7 @@ jl_clean(){
 		echo "RetainHome=$home" >> "$liveconfigfile"
 	fi
 	msg_out "initrd archive type: $initrd detected!"
-	msg_out "Rebuilding initrd!\n*** this step is needed if you have modified the kernel module, or init scripts.\n*** If you have installed new kernel and want to boot that kernel then skip this for now"
+	msg_out "Rebuilding initrd...\nThis step is needed if you have modified the kernel module, or init scripts.\n If you have installed new kernel and want to boot that kernel then skip this for now"
 
 	choice=$(get_yn "Have you modified init script or kernel module? (y/n)?: " $timeout)
 	c=1
@@ -335,7 +335,7 @@ jlcd_start(){
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
 	if [ -f "$JL_lockf" ]; then
-	  err_out "another instance of this section is running\n or premature shutdown detected from a previous run\nYou need to finish that first or force your way through..."
+	  err_out "another instance of this section is running or premature shutdown detected from a previous runYou need to finish that first or force your way through..."
 	  force=$(get_yn "Force start..(y/n)?: " 10)
 	  if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
 		msg_out "Aborted."
@@ -365,7 +365,7 @@ jlcd_start(){
 	  cd "$livedir"
 	  isopath="$(cat "$JLIVEisopathF")"
 	  if [ -d edit ]; then
-		wrn_out "seems this isn't really a new project (edit directory exists),\nexisting files will be overwritten!!!\n if you aren't sure what this warning is about, close this terminal and run again. \nIf this is shown again, enter y and continue..."
+		wrn_out "seems this isn't really a new project (edit directory exists),existing files will be overwritten!!! if you aren't sure what this warning is about, close this terminal and run again. If this is shown again, enter y and continue..."
 		cont=$(get_yn "Are you sure, you want to continue (y/n)?: " $timeout)
 		if [  "$cont" = "y" ] || [ "$cont" = "Y" ]; then
 		  msg_out "OK"
@@ -431,7 +431,7 @@ jlcd_start(){
 		fi
 	  else
 		cdname="New-Disk"
-		msg_out "\n*** Using 'New-Disk' as cd/dvd name"
+		msg_out "Using 'New-Disk' as cd/dvd name"
 	  fi
 	fi
 	if grep -sq '^DiskName=' "$liveconfigfile";then
@@ -462,7 +462,7 @@ jlcd_start(){
 	#msg_out "\tdone"
 	refresh_network
 	##############################Debcache management########################################################################
-	msg_out "Debcache Management starting\n*** Moving deb files to edit/var/cache/apt/archives"
+	msg_out "Debcache Management starting. Moving deb files to edit/var/cache/apt/archives"
 	cd "$livedir"
 	if [ -d "debcache" ]; then
 	  echo dummy123456 > debcache/dummy123456.deb
@@ -505,7 +505,7 @@ jlcd_start(){
 		xhost -
 	fi
 
-	msg_out "Running chroot terminal...\n*** When you are finished, run: exit or simply close the chroot terminal.\n\n*** run 'cat help' or './help' to get help in chroot terminal."
+	msg_out "Running chroot terminal... \nWhen you are finished, run: exit or simply close the chroot terminal. run 'cat help' or './help' to get help in chroot terminal."
 	if ! $JL_terminal1 -e "$SHELL -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec $SHELL'" 2>/dev/null; then
 		wrn_out "couldn't run $JL_terminal1, trying $JL_terminal2..."
 		if ! $JL_terminal2 -e "$SHELL -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec $SHELL'" 2>/dev/null; then
@@ -522,7 +522,7 @@ jlcd_start(){
 	msg_out 'Restoring access control state'
 	xhost $bxhost #leave this variable unquoted
 	##################################Debcache management############################################################
-	msg_out "Debcache Management starting\n*** Moving .deb files to debcache"
+	msg_out "Debcache Management starting. Moving .deb files to debcache"
 	cd "$livedir"
 	if [ ! -d "debcache" ]; then
 	  mkdir debcache

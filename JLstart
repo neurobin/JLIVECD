@@ -11,6 +11,16 @@ mkdir -p "$JL_logdirtmp"
 trap finish EXIT
 trap finish SIGTERM
 
+help="
+******** JLstart ********
+Usage:
+    -ub       ubuntu mode
+    -db       debian mode
+    -h        help menu
+    -v        version info
+See JLopt -h for settings.
+"
+
 live_os=
 while [[ $# > 0 ]]
 do
@@ -25,15 +35,15 @@ do
         	JLopt --version
         	exit 0
             ;;
-        -h|--help|*)
-            echo "Usage:"
-            echo "	  -ub		ubuntu mode"
-            echo "    -db       debian mode"
-            echo "    -h        help menu"
-            echo "    -v		version info"
-            echo "See JLopt -h for other usage."
-            exit 1
+        -h|--help)
+            echo "$help"
+            exit 0
             ;;
+        *)
+            echo "$help"
+            echo "invalid option: '$1'"
+            exit 1
+        	;;
     esac
     shift
 done
