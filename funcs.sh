@@ -272,7 +272,10 @@ jl_clean(){
 	initrd="$(cat edit/initrd)"
 	rm -f edit/run/synaptic.socket
 	chroot edit aptitude clean 2>/dev/null
-	chroot edit rm -r /mydir
+	#chroot edit rm -r /mydir
+	if [ -d edit/mydir ]; then
+		mv -f edit/mydir ./
+	fi
 	chroot edit rm -rf /tmp/* ~/.bash_history
 	chroot edit rm /var/lib/dbus/machine-id
 	chroot edit rm /sbin/initctl
@@ -466,6 +469,14 @@ jlcd_start(){
 	  mv -f debcache/*.deb edit/var/cache/apt/archives
 	  msg_out "deb files moved. Debcache Management complete!"
 	fi
+	#more cache
+	if [ -d mydir ] && [ -d edit ]; then
+		mv -f mydir edit/
+	elif [ -d edit ]; then
+		mkdir edit/mydir
+	fi
+	chmod 777 edit/mydir
+	msg_out 'use edit/mydir to store files that are not supposed to be included in the resultant livecd. This directory content persisits and thus you can keep source packages and other files here. An octal 777 permission is set for this directory, thus no root privilege required to copy files.'
 	##############################Create chroot environment and prepare it for use#############################################
 	mount --bind /dev/ edit/dev
 	msg_out "Detecting access control state"

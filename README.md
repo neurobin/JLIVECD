@@ -77,7 +77,7 @@ Example:
 ...............................
 ```
 
-Hints are given on the go, follow them to successfully create a customized live cd/dvd.
+Hints are given on the go, follow them to create a customized live cd/dvd.
 
 ## For Debian
 
@@ -104,8 +104,9 @@ In your project directory, you will find some default directories. Don't change 
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
 * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
 * `mnt`: A directory used only for mounting ISO image.
+* `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install source packages and files that you need to store for future references.
 
-There's also an additional file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults for various options.
+There's also a file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults.
 
 
 
