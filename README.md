@@ -104,7 +104,7 @@ In your project directory, you will find some default directories. Don't change 
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
 * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
 * `mnt`: A directory used only for mounting ISO image.
-  
+
 There's also an additional file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults for various options.
 
 
@@ -139,7 +139,7 @@ There's also an additional file named `.config`, which contains configuration of
 
 # Special Feature:
 
-I call it debcache management! 
+I call it debcache management!
 
 1. Just put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installaion process.
 2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
@@ -148,6 +148,10 @@ I call it debcache management!
 5. Altenatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
 # ChangeLog:
+
+### version 2.2.2
+
+* Debian support (complete, experimental)
 
 ### version 2.2.1
 
@@ -236,7 +240,7 @@ Follow the following link for bug report:
 
 https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 
-4.In Ubuntu 14.04 Gnome LTS you might encounter two more bugs: 
+4.In Ubuntu 14.04 Gnome LTS you might encounter two more bugs:
 
 One should be solved by editing:
 
@@ -255,7 +259,7 @@ Other one should be solved by editing:
 /etc/kernel/postinst.d/zz-update-grub
 ```
 
-find the following and comment out the if and fi line: 
+find the following and comment out the if and fi line:
 
 ```sh
 if [ -e /boot/grub/grub.cfg ]; then
@@ -275,7 +279,7 @@ https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1325142
 sh -c 'ubiquity gtk_ui'
 ```
 
-to 
+to
 
 ```sh
 sh -c 'sudo ubiquity gtk_ui'

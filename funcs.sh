@@ -60,18 +60,19 @@ get_yn(){
 	=== $(printf "$1")"
 	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*//')
 	local yn
-	if [ "$2" = "" ]; then
+    local timeout="$2"
+	if [ "$timeout" = "" ]; then
 		read -p "$msg" yn >/dev/null
 	else
 	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
 	        err_exit "invalid timeout value: $timeout"
 	    fi
-		read -t "$2" -p "$msg" yn >/dev/null
+		read -t "$timeout" -p "$msg" yn >/dev/null
 	fi
 	if [ "$yn" = y ]; then
 		echo y > /dev/stdout
-	else
-		echo '' > /dev/stdout
+    else
+        echo "$yn" > /dev/stdout
 	fi
 }
 
@@ -82,13 +83,14 @@ get_input(){
 	=== $(printf "$1")"
 	msg=$(echo "$msg" |sed -e 's/^[[:blank:]]*//')
 	local inp
-	if [ "$2" = "" ]; then
+	local timeout="$2"
+	if [ "$timeout" = "" ]; then
 		read -p "$msg" inp >/dev/null
 	else
 	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
 	        err_exit "invalid timeout value: $timeout"
 	    fi
-		read -t "$2" -p "$msg" inp >/dev/null
+		read -t "$timeout" -p "$msg" inp >/dev/null
 	fi
 	echo "$inp" > /dev/stdout
 }
@@ -184,23 +186,74 @@ fresh_start(){
 	cd "$maindir"
 }
 
+get_initrd_name(){
+	local path="$1"
+	[ -d "$path" ] || return 1
+	if [ -f "$path/initrd.gz" ]; then
+		echo initrd.gz >/dev/stdout
+	elif [ -f "$path/initrd.lz" ]; then
+		echo initrd.lz >/dev/stdout
+	elif [ -f "$path/initrd.img" ]; then
+		echo initrd.img >/dev/stdout
+	else
+		return 1
+		# wrn_out "couldn't dtermine initrd name in: $path"
+		# local initrd="$(get_input "Enter the name of initrd archive: ")"
+		# echo "$initrd"  >/dev/stdout
+	fi
+	return 0
+}
+
+get_vmlinuz_path(){
+	local path="$1"
+	[ -d "$path" ] || return 1
+	if [ -f "$path/vmlinuz" ]; then
+		echo "$path/vmlinuz"  >/dev/stdout
+	elif [ -f "$path/vmlinuz.efi" ]; then
+		echo "$path/vmlinuz.efi"  >/dev/stdout
+	else
+		return 1
+		# wrn_out "Couldn't find vmlinuz in: $path"
+		# local vmlinuz=$(get_input "Enter the name of vmlinuz: ")
+		# echo "$path/$vmlinuz"  >/dev/stdout
+	fi
+	return 0
+}
+
 rebuild_initrd(){
-    initrd="$1"
-    kerver="$2"
+    local initrd="$1"
+    local kerver="$2"
     mv edit/"$initrd" edit/"$initrd".old.link
     msg_out "Rebuilding initrd..."
     mount --bind /dev/ edit/dev
     chroot edit mount -t proc none /proc
     chroot edit mount -t sysfs none /sys
     chroot edit mount -t devpts none /dev/pts
-    chroot edit mkinitramfs -o /"$initrd" "$kerver"
+    chroot edit mkinitramfs -o /"$initrd" "$kerver" &&
+	msg_out "$initrd success." ||
+	wrn_out "$initrd failed (complete or partial)"
+    mv edit/"$initrd" extracted/"$JL_casper"/
+	local initrd1=$(get_initrd_name extracted/install)
+	if [ "$initrd1" != '' ]; then
+		chroot edit mkinitramfs -o /"$initrd1" "$kerver" &&
+		msg_out "$initrd1 success." ||
+		wrn_out "$initrd1 failed (complete or partial)"
+	    mv edit/"$initrd1" extracted/install/
+	fi
+	local initrd2=$(get_initrd_name extracted/install/gtk)
+	if [ "$initrd2" != '' ]; then
+		chroot edit mkinitramfs -o /"$initrd2" "$kerver" &&
+		msg_out "$initrd2 success." ||
+		wrn_out "$initrd2 failed (complete or partial)"
+	    mv edit/"$initrd2" extracted/install/gtk/
+	fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
     chroot edit umount /dev/pts
     umount edit/dev || umount -lf edit/dev
-    mv edit/"$initrd" extracted/"$JL_casper"/
-    mv edit/"$initrd".old.link edit/"$initrd"
-    msg_out "initrd rebuilt successfully!"
+    mv edit/"$initrd".old.link edit/"$initrd" &&
+    msg_out "edit/$initrd updated." ||
+	wrn_out "Could not update edit/$initrd"
 }
 
 jl_clean(){
@@ -389,21 +442,15 @@ jlcd_start(){
 	cd "$livedir"
 	msg_out "Entered into directory $livedir"
 	##################### managing initrd################
-	msg_out "managing initrd..."
-	if [ -f "extracted/$JL_casper/initrd.lz" ]; then
-	  initrd="initrd.lz"
-	  msg_outdev/null "Found: $initrd"
-	elif [ -f "extracted/$JL_casper/initrd.gz" ]; then
-	  initrd="initrd.gz"
-	  msg_out "Found: extracted/$JL_casper/$initrd"
-	elif [ -f "extracted/$JL_casper/initrd.img" ]; then
-	  initrd="initrd.img"
-	  msg_out "Found: extracted/$JL_casper/$initrd"
+	msg_out "Finding initrd name ..."
+	initrd=$(get_initrd_name "extracted/$JL_casper")
+	if [ "$initrd" = ''  ]; then
+		wrn_out "couldn't dtermine initrd name in: extracted/$JL_casper"
+		initrd="$(get_input "Enter the name of initrd archive: ")"
 	else
-	  msg_out "couldn't dtermine initrd type"
-	  initrd="$(get_input "Enter the name of initrd archive: ")"
+		msg_out "Found initrd: $initrd"
 	fi
-	rm -f edit/initrd #name of the initrd is saved here.
+	#rm -f edit/initrd #name of the initrd is saved here.
 	echo "$initrd" > edit/initrd
 	##############################Enable network connection####################################################################
 	#msg_out "Preparing network connection for chroot....."
@@ -474,30 +521,28 @@ jlcd_start(){
 	msg_out "deb files moved. Debcache Management complete!"
 	##################################Cleaning...#########################################
 	jl_clean
-	rm -f "$JL_lockF"
-	if [ -f "edit/$initrd" ]; then
-	  cp -L edit/"$initrd" extracted/"$JL_casper"/
-	else
-	  msg_out "Assuming: you haven't modified the kernel modules or init scripts"
-	fi
+	# if [ -f "edit/$initrd" ]; then
+	#   cp -L edit/"$initrd" extracted/"$JL_casper"/
+	# else
+	#   msg_out "Assuming: you haven't modified the kernel modules or init scripts"
+	# fi
 	###############################Post Cleaning#####################################################################
 	msg_out "Cleaning system"
+	rm -f "$JL_lockF"
 	rm -f edit/initrd
 	rm -f edit/prepare
 	rm -f edit/help
 	msg_out "System Cleaned!"
 	##############################Checking for new installed kernel############################################################
 	kerver=0
-	if [ -f "extracted/$JL_casper/vmlinuz" ]; then
-	  vmlinuz="extracted/$JL_casper/vmlinuz"
-	  msg_out "vmlinuz found: $vmlinuz"
-	elif [ -f "extracted/$JL_casper/vmlinuz.efi" ]; then
-	  vmlinuz="extracted/$JL_casper/vmlinuz.efi"
-	  msg_out "vmlinuz found: $vmlinuz"
+	msg_out "Finding vmlinuz ..."
+	vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
+	if [ "$vmlinuz" = '' ]; then
+		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
+		vmlinuz1=$(get_input "Enter the name of vmlinuz: ")
+		vmlinuz="extracted/$JL_casper/$vmlinuz1"
 	else
-	  msg_out "Couldn't find vmlinuz!"
-	  vmlinuz=$(get_input "Enter the name of vmlinuz: ")
-	  vmlinuz="extracted/$JL_casper/$vmlinuz"
+		msg_out "Found vmlinuz: $vmlinuz"
 	fi
 	d=2
 	ker=""
@@ -509,23 +554,23 @@ jlcd_start(){
 	while [ $d -eq 1 ]
 	do
 	  kerver="$(get_input "Enter the kernel version (take your time on this one): ")"
-	  vmlinuz_path=edit/boot/vmlinuz-"$kerver"
-	  initrd_path=edit/boot/initrd.img-"$kerver"
-	  if [ -f "$vmlinuz_path" ]; then
-		if [ -f "$initrd_path" ]; then
-		  cp edit/boot/vmlinuz-"$kerver" "$vmlinuz"
-		#   cp edit/boot/initrd.img-"$kerver" extracted/$JL_casper/"$initrd"
-		  rebuild_initrd "$initrd" "$kerver"
-		  msg_out "kernel updated successfully!"
-		  d=2
-		else
-		  wrn_out "couldn't find the specified kernel!\nEnter n to skip or enter the right version"
-		fi
-	  else
-		wrn_out "couldn't find the specified kernel!\nEnter n to skip or enter the right version"
-	  fi
 	  if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
-		d=2
+		break
+	  fi
+	  vmlinuz_path=edit/boot/vmlinuz-"$kerver"
+	  if [ -f "$vmlinuz_path" ]; then
+	  	  msg_out "Updating vmlinuz ..."
+		  cp "$vmlinuz_path" "$vmlinuz" && msg_out "$vmlinuz updated." || err_out "$vmlinuz update failed!"
+		  vmlinuz1=$(get_vmlinuz_path extracted/install)
+		  if [ "$vmlinuz1" != '' ]; then
+		  	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
+		  fi
+		  vmlinuz1=$(get_vmlinuz_path extracted/install/gtk)
+		  if [ "$vmlinuz1" != '' ]; then
+		  	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
+		  fi
+		  rebuild_initrd "$initrd" "$kerver"
+		  d=2
 	  fi
 	done
 	fastcomp="$(grep -soP '(?<=^FastCompression=).*' "$liveconfigfile")"
