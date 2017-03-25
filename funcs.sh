@@ -233,20 +233,20 @@ rebuild_initrd(){
 	msg_out "$initrd success." ||
 	wrn_out "$initrd failed (complete or partial)"
     mv edit/"$initrd" extracted/"$JL_casper"/
-	local initrd1=$(get_initrd_name extracted/install)
-	if [ "$initrd1" != '' ]; then
-		chroot edit mkinitramfs -o /"$initrd1" "$kerver" &&
-		msg_out "$initrd1 success." ||
-		wrn_out "$initrd1 failed (complete or partial)"
-	    mv edit/"$initrd1" extracted/install/
-	fi
-	local initrd2=$(get_initrd_name extracted/install/gtk)
-	if [ "$initrd2" != '' ]; then
-		chroot edit mkinitramfs -o /"$initrd2" "$kerver" &&
-		msg_out "$initrd2 success." ||
-		wrn_out "$initrd2 failed (complete or partial)"
-	    mv edit/"$initrd2" extracted/install/gtk/
-	fi
+	# local initrd1=$(get_initrd_name extracted/install)
+	# if [ "$initrd1" != '' ]; then
+	# 	chroot edit mkinitramfs -o /"$initrd1" "$kerver" &&
+	# 	msg_out "$initrd1 success." ||
+	# 	wrn_out "$initrd1 failed (complete or partial)"
+	#     mv edit/"$initrd1" extracted/install/
+	# fi
+	# local initrd2=$(get_initrd_name extracted/install/gtk)
+	# if [ "$initrd2" != '' ]; then
+	# 	chroot edit mkinitramfs -o /"$initrd2" "$kerver" &&
+	# 	msg_out "$initrd2 success." ||
+	# 	wrn_out "$initrd2 failed (complete or partial)"
+	#     mv edit/"$initrd2" extracted/install/gtk/
+	# fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
     chroot edit umount /dev/pts
@@ -561,14 +561,14 @@ jlcd_start(){
 	  if [ -f "$vmlinuz_path" ]; then
 	  	  msg_out "Updating vmlinuz ..."
 		  cp "$vmlinuz_path" "$vmlinuz" && msg_out "$vmlinuz updated." || err_out "$vmlinuz update failed!"
-		  vmlinuz1=$(get_vmlinuz_path extracted/install)
-		  if [ "$vmlinuz1" != '' ]; then
-		  	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
-		  fi
-		  vmlinuz1=$(get_vmlinuz_path extracted/install/gtk)
-		  if [ "$vmlinuz1" != '' ]; then
-		  	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
-		  fi
+		#   vmlinuz1=$(get_vmlinuz_path extracted/install)
+		#   if [ "$vmlinuz1" != '' ]; then
+		#   	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
+		#   fi
+		#   vmlinuz1=$(get_vmlinuz_path extracted/install/gtk)
+		#   if [ "$vmlinuz1" != '' ]; then
+		#   	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
+		#   fi
 		  rebuild_initrd "$initrd" "$kerver"
 		  d=2
 	  fi
