@@ -53,6 +53,37 @@ mode_select(){
 	done
 }
 
+
+get_prop_val(){
+	local prop="$1"
+	local cf="$2"
+	grep -isoP "(?<=^$prop=).*" "$cf" > /dev/stdout
+}
+
+chk_conf_prop(){
+	local prop="$1"
+	local cf="$2"
+	if grep -isq "^[[:blank:]]*$prop=" "$cf";then
+		return 0
+	else
+		return 1
+	fi
+}
+
+
+update_prop_val(){
+	local prop="$1"
+	local val="$2"
+	local cf="$3"
+	local h="$4"
+	if chk_conf_prop "$prop" "$cf"; then
+		# sed -E -i.bak "s/^[[:blank:]]*(RetainHome=).*/\1$val/I" "$cf"
+		echo "$(awk "BEGIN{IGNORECASE=1} {sub(/^[[:blank:]]*$prop=.*$/,\"$prop=$val\");print}" "$cf")" > "$cf"
+	else
+		printf "\n#$h\n$prop=$val\n" >> "$cf"
+	fi
+}
+
 get_yn(){
 	#$1: msg
 	#$2: timeout
@@ -76,6 +107,22 @@ get_yn(){
 	fi
 }
 
+get_prop_yn(){
+	local prop="$1"
+	local cf="$2"
+	local msg="$3"
+    local timeout="$4"
+	local bval="${!prop}"
+	local val="$bval"
+	if [ "$bval" = "" ]; then
+		val=$(get_prop_val "$prop" "$cf")
+		[ "$val" = Y ] || [ "$val" = y ] || val=n
+		local tval=$(get_yn "$msg (Y/n)? (default '$val'): " "$timeout")
+		[ "$tval" = "" ] || val="$tval"
+	fi
+	echo "$val" >/dev/stdout
+}
+
 get_input(){
 	#$1: msg
 	#$2: timeout
@@ -93,6 +140,22 @@ get_input(){
 		read -t "$timeout" -p "$msg" inp >/dev/null
 	fi
 	echo "$inp" > /dev/stdout
+}
+
+get_prop_input(){
+	local prop="$1"
+	local cf="$2"
+	local msg="$3"
+    local timeout="$4"
+	local bval="${!prop}"
+	local val="$bval"
+	if [ "$bval" = "" ]; then
+		val=$(get_input "$msg" "$timeout")
+		if [ "$val" = "" ]; then
+			val=$(get_prop_val "$prop" "$cf")
+		fi
+	fi
+	echo "$val" >/dev/stdout
 }
 
 sed_fxrs(){
@@ -183,6 +246,7 @@ fresh_start(){
 	[ -d extracted ] && wrn_out "$livedir/extracted exists, content will be overwritten" || mkdir extracted
 	rm -f "$JLIVEdirF"
 	echo "$livedir" > "$JLIVEdirF"
+	cp "$JL_sconf_file_d" "$JL_sconf"
 	cd "$maindir"
 }
 
@@ -233,20 +297,6 @@ rebuild_initrd(){
 	msg_out "$initrd success." ||
 	wrn_out "$initrd failed (complete or partial)"
     mv edit/"$initrd" extracted/"$JL_casper"/
-	# local initrd1=$(get_initrd_name extracted/install)
-	# if [ "$initrd1" != '' ]; then
-	# 	chroot edit mkinitramfs -o /"$initrd1" "$kerver" &&
-	# 	msg_out "$initrd1 success." ||
-	# 	wrn_out "$initrd1 failed (complete or partial)"
-	#     mv edit/"$initrd1" extracted/install/
-	# fi
-	# local initrd2=$(get_initrd_name extracted/install/gtk)
-	# if [ "$initrd2" != '' ]; then
-	# 	chroot edit mkinitramfs -o /"$initrd2" "$kerver" &&
-	# 	msg_out "$initrd2 success." ||
-	# 	wrn_out "$initrd2 failed (complete or partial)"
-	#     mv edit/"$initrd2" extracted/install/gtk/
-	# fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
     chroot edit umount /dev/pts
@@ -258,17 +308,7 @@ rebuild_initrd(){
 
 jl_clean(){
 	kerver=$(uname -r)
-	livedir="$(cat "$JLIVEdirF")"
-	liveconfigfile="$livedir/.config"
-	timeout="$(grep -soP '(?<=^timeout=).*' "$JL_configfile")"
-	if echo "$timeout" |grep -E '^[0-9]+$'; then
-	  timeout=$(echo "$timeout" |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
-	else
-	  timeout="$JL_timeoutd"
-	fi
-	homec="$(grep -soP '(?<=^RetainHome=).*' "$liveconfigfile")"
-	[ "$homec" = Y ] || [ "$homec" = y ] || homec="n"
-	cd "$livedir"
+	cd "$livedir" #exported from jlcd_start
 	initrd="$(cat edit/initrd)"
 	rm -f edit/run/synaptic.socket
 	chroot edit aptitude clean 2>/dev/null
@@ -286,19 +326,14 @@ jl_clean(){
 	umount edit/dev || umount -lf edit/dev
 	rm -f "$JL_lockF"
 	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
-	home=$(get_yn "Want to retain edit/home directory? (y/n)? (default '$homec'): " $timeout)
-	[ "$home" = "" ] && home=$homec
-	if [  "$home" = Y ] || [ "$home" = y ]; then
+	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
+	if [  "$homec" = Y ] || [ "$homec" = y ]; then
 	  msg_out "edit/home kept as it is"
 	else
 	  rm -rf edit/home/*
 	  msg_out "edit/home cleaned!"
 	fi
-	if grep -sq '^RetainHome=' "$liveconfigfile";then
-	   sed -r -i.bak "s/(^RetainHome=).*/\1$home/" "$liveconfigfile"
-	else
-		echo "RetainHome=$home" >> "$liveconfigfile"
-	fi
+	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 	msg_out "initrd archive type: $initrd detected!"
 	msg_out "Rebuilding initrd...\nThis step is needed if you have modified the kernel module, or init scripts.\n If you have installed new kernel and want to boot that kernel then skip this for now"
 
@@ -324,13 +359,16 @@ jl_clean(){
 
 
 jlcd_start(){
+	export livedir=
+	export liveconfigfile=
+	export timeout=
 	if $JL_debian; then
 		msg_out "Running in Debian mode"
 	else
 		msg_out "Running in Ubuntu mode"
 	fi
-	JL_terminal1="$(grep -soP '(?<=^terminal1=).*' "$JL_configfile")"
-	JL_terminal2="$(grep -soP '(?<=^terminal2=).*' "$JL_configfile")"
+	JL_terminal1=$(get_prop_val terminal1 "$JL_configfile")
+	JL_terminal2=$(get_prop_val terminal2 "$JL_configfile")
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
@@ -348,7 +386,7 @@ jlcd_start(){
 	yn="$JL_fresh"
 	livedir=""
 
-	timeout="$(grep -soP '(?<=^timeout=).*' "$JL_configfile")"
+	timeout="$(get_prop_val timeout "$JL_configfile")"
 	if echo "$timeout" |grep -E '^[0-9]+$'; then
 	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
@@ -413,32 +451,28 @@ jlcd_start(){
 	liveconfigfile="$livedir/.config"
 	touch "$liveconfigfile"
 	chmod 777 "$liveconfigfile"
+
+	set -a
+	if [ -f "$livedir/$JL_sconf"  ]; then
+		. "$livedir/$JL_sconf"
+	fi
+	set +a
+
 	msg_out "If you just hit enter it will take your previous choice (if any)"
-	cdname="$(get_input "Enter your desired (customized) cd/dvd name: ")"
+
+	cdname="$(get_prop_input "$JL_dnpn" "$liveconfigfile" "Enter your desired (customized) cd/dvd name: ")"
 	iso="$(echo "$cdname" |tail -c 5)"
 	iso="$(to_lower "$iso")"
 	if [ "$iso" = ".iso" ]; then
 	  cdname="$(echo "$cdname" | sed 's/....$//')"
 	fi
 	if [ "$cdname" = "" ]; then
-	  if [ -f "$liveconfigfile" ]; then
-		cdname="$(grep -soP '(?<=^DiskName=).*' "$liveconfigfile")"
-		if [ "$cdname" = "" ]; then
-			cdname="New-Disk"
-			msg_out "Using 'New-Disk' as cd/dvd name"
-		else
-			msg_out "Using previously used name: $cdname"
-		fi
-	  else
 		cdname="New-Disk"
 		msg_out "Using 'New-Disk' as cd/dvd name"
-	  fi
-	fi
-	if grep -sq '^DiskName=' "$liveconfigfile";then
-	   sed -r -i.bak "s/(^DiskName=).*/\1$(sed_fxrs "$cdname")/" "$liveconfigfile"
 	else
-		echo "DiskName=$cdname" >> "$liveconfigfile"
+		msg_out "Using '$cdname' as cd/dvd name"
 	fi
+	update_prop_val "$JL_dnpn" "$cdname" "$liveconfigfile" "ISO image name without .iso"
 	##############################Copy some required files#####################################################################
 	cp main/preparechroot "$livedir"/edit/prepare
 	cp main/help "$livedir"/edit/help
@@ -487,18 +521,8 @@ jlcd_start(){
 		bxhost='+'
 		msg_out 'Access control is disabled'
 	fi
-	dxhost="$(grep -soP '(?<=^xhost=).*' "$liveconfigfile")"
-	if [ "$bxhost" = '+' ]; then
-		xh=$(get_yn"Enable access control (prevent GUI apps to run) (Y/n)? (default '$dxhost'): " $timeout)
-	else
-		xh=$(get_yn "Keep access control enabled (prevent GUI apps to run) (Y/n)? (default '$dxhost'): " $timeout)
-	fi
-	[ "$xh" = "" ] && xh="$dxhost"
-	if grep -sq '^xhost=' $liveconfigfile; then
-	   sed -r -i.bak "s/(^xhost=).*/\1$xh/" "$liveconfigfile"
-	else
-		echo "xhost=$xh" >> "$liveconfigfile"
-	fi
+	xh=$(get_prop_yn "$JL_xhpn" "$liveconfigfile" "Enable access control (prevent GUI apps to run)" "$timeout")
+	update_prop_val "$JL_xhpn" "$xh" "$liveconfigfile" "Whether to prevent GUI apps to run."
 	if [ "$xh" != Y ] && [ "$xh" != y ]; then
 		xhost +
 	else
@@ -520,7 +544,7 @@ jlcd_start(){
 		fi
 	fi
 	msg_out 'Restoring access control state'
-	xhost $bxhost #leave this variable unquoted
+	xhost $bxhost && msg_out "xhost restored to initial state."  #leave this variable unquoted
 	##################################Debcache management############################################################
 	msg_out "Debcache Management starting. Moving .deb files to debcache"
 	cd "$livedir"
@@ -584,32 +608,14 @@ jlcd_start(){
 		  d=2
 	  fi
 	done
-	fastcomp="$(grep -soP '(?<=^FastCompression=).*' "$liveconfigfile")"
-	choice1=$(get_yn "Use fast compression (ISO size may become larger) (Y/n)? (default '$fastcomp'): " $timeout)
-	[ "$choice1" = "" ] && choice1="$fastcomp"
-	if grep -sq '^FastCompression=' "$liveconfigfile";then
-	   sed -r -i.bak "s/(^FastCompression=).*/\1$choice1/" "$liveconfigfile"
-	else
-		echo "FastCompression=$choice1" >> "$liveconfigfile"
-	fi
+	fastcomp=$(get_prop_yn "$JL_fcpn" "$liveconfigfile" "Use fast compression (ISO size may become larger)" "$timeout")
+	update_prop_val "$JL_fcpn" "$fastcomp" "$liveconfigfile" "y: Fast compression, larger image size. n: smaller image but slower"
 	#check for uefi
-	uefi="$(grep -soP '(?<=^UEFI=).*' "$liveconfigfile")"
-	choice2=$(get_yn "Want UEFI image (Y/n)? (default '$uefi'): " $timeout)
-	[ "x$choice2" = "x" ] && choice2="$uefi"
-	if grep -sq '^UEFI=' $liveconfigfile;then
-	   sed -r -i.bak "s/(^UEFI=).*/\1$choice2/" "$liveconfigfile"
-	else
-		echo "UEFI=$choice2" >> $liveconfigfile
-	fi
+	uefi=$(get_prop_yn "$JL_ufpn" "$liveconfigfile" "Want UEFI image" "$timeout")
+	update_prop_val "$JL_ufpn" "$uefi" "$liveconfigfile" "Whether the image to be built is a UEFI image"
 	#check for hybrid
-	hybrid="$(grep -soP '(?<=^Hybrid=).*' "$liveconfigfile")"
-	choice3=$(get_yn "Want hybrid image (Y/n)? (default '$hybrid'): " $timeout)
-	[ "$choice3" = "" ] && choice3="$hybrid"
-	if grep -sq '^Hybrid=' "$liveconfigfile";then
-	   sed -r -i.bak "s/(^Hybrid=).*/\1$choice3/" "$liveconfigfile"
-	else
-		echo "Hybrid=$choice3" >> "$liveconfigfile"
-	fi
+	hybrid=$(get_prop_yn "$JL_hbpn" "$liveconfigfile" "Want hybrid image" "$timeout")
+	update_prop_val "$JL_hbpn" "$liveconfigfile" "Whether the image to be built is a hybrid image."
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
@@ -621,9 +627,9 @@ jlcd_start(){
 	rm -f extracted/"$JL_casper"/filesystem.squashfs
 	msg_out "Deleted old filesystem.squashfs.."
 	msg_out "Rebuilding filesystem.squashfs.."
-	if [ "$choice1" = Y ] || [ "$choice1" = y ];then
+	if [ "$fastcomp" = Y ] || [ "$fastcomp" = y ];then
 	  msg_out "Using fast compression. Size may become larger"
-	  mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -b 1048576
+	  mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -b 1048576 -e edit/boot
 	else
 	  msg_out "Using exhaustive compression. Size may become lesser"
 	  #mksquashfs edit extracted/"$JL_casper"/filesystem.squashfs -comp xz
@@ -641,14 +647,14 @@ jlcd_start(){
 	  find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat | tee md5sum.txt
 	fi
 	msg_out "Creating the image"
-	if [ "$choice2" = Y ] || [ "$choice2" = y ];then
+	if [ "$uefi" = Y ] || [ "$uefi" = y ];then
 		genisoimage -U -A "$IMAGE_NAME" -V "$IMAGE_NAME" -volset "$IMAGE_NAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot . && msg_out 'Prepared UEFI image'
 		uefi_opt=--uefi
 	else
 		genisoimage -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
 		uefi_opt=
 	fi
-	if [ "$choice3" = Y ] || [ "$choice3" = y ]; then
+	if [ "$hybrid" = Y ] || [ "$hybrid" = y ]; then
 		isohybrid $uefi_opt ../"$cdname".iso && msg_out "Converted to hybrid image"
 	fi
 	cd ..

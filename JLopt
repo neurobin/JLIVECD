@@ -1,7 +1,7 @@
 #!/bin/bash
 project='JLIVECD'
 description='Live CD/DVD customization tool'
-version='2.2.2'
+version='2.3.0'
 bugurl='https://github.com/neurobin/JLIVECD/issues'
 author='Md. Jahidul Hamid <jahidulhamid@yahoo.com>'
 source='https://github.com/neurobin/JLIVECD'
@@ -27,6 +27,12 @@ JLopt [options]
 -t   : set timeout
 -h   : show help menu.
 "
+
+export JLdir=/usr/local/JLIVECD
+cd $JLdir
+. ./defconf.sh
+. ./funcs.sh
+
 logdir="/usr/local/JLIVECD"
 configfile="$logdir/.config"
 
@@ -54,67 +60,35 @@ case "${opts[$i]}" in
        	timeout="${opts[$((i+1))]}"
        	[[ $timeout =~ ^[0-9]+$ ]] || { echo "Bad value for timeout: '$timeout'";exit 1; }
        	timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
-       	if grep -sq '^timeout=' $configfile;then
-       	    sed -r -i.bak "s/(^timeout=).*/\1$timeout/" $configfile
-       	else
-       	    echo "timeout=$timeout" >> $configfile
-       	fi
+       	update_prop_val "$JL_tmn" "$timeout" "$configfile" "Timeout value"
        	skip=true;
        	continue
        	;;
    -t1|--terminal1)
        	terminal1="${opts[$((i+1))]}"
        	command -v "$terminal1" >/dev/null 2>&1 || { echo "Invalid terminal command: '$terminal1'" ; exit 1; }
-       	if grep -sq '^terminal1=' $configfile;then
-       	    if [[ $(grep -soP '(?<=^terminal2=).*' $configfile) != $terminal1 ]];then
-       	        sed -r -i.bak "s/(^terminal1=).*/\1$terminal1/" $configfile
-       	    else
-       	        echo "This terminal is already a default terminal."
-       	        exit 1
-       	    fi
-       	else
-       	    if [[ $(grep -soP '(?<=^terminal2=).*' $configfile) != $terminal1 ]];then
-       	        echo "terminal1=$terminal1" >> $configfile
-       	    else
-       	        echo "This terminal is already a default terminal."
-       	        exit 1
-       	    fi
-       	fi
+       	update_prop_val "$JL_t1n" "$terminal" "$configfile" "Primary terminal"
        	skip=true;
        	continue
        	;;
    -t2|--terminal2)
        	terminal2="${opts[$((i+1))]}"
        	command -v "$terminal2" >/dev/null 2>&1 || { echo "Invalid terminal command: '$terminal2'" ; exit 1; }
-       	if grep -sq '^terminal2=' $configfile;then
-       	    if [[ $(grep -soP '(?<=^terminal1=).*' $configfile) != $terminal2 ]];then
-       	        sed -r -i.bak "s/(^terminal2=).*/\1$terminal2/" $configfile
-       	    else
-       	        echo "This terminal is already a default terminal."
-       	        exit 1
-       	    fi
-       	else
-       	    if [[ $(grep -soP '(?<=^terminal1=).*' $configfile) != $terminal2 ]];then
-       	        echo "terminal2=$terminal2" >> $configfile
-       	    else
-       	        echo "This terminal is already a default terminal."
-       	        exit 1
-       	    fi
-       	fi
+       	update_prop_val "$JL_t2n" "$terminal2" "$configfile" "Secondary terminal"
        	skip=true;
        	continue
    	    ;;
     -rt1|--reset-terminal1)
-    	sed -r -i.bak "/^terminal1=.*/d" $configfile
+        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=")" > "$configfile"
     	continue
     	;;
     -rt2|--reset-terminal2)
-    	sed -r -i.bak "/^terminal2=.*/d" $configfile
+        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=")" > "$configfile"
     	continue
     	;;
     -rt|--reset-terminal)
-    	sed -r -i.bak "/^terminal1=.*/d" $configfile
-    	sed -r -i.bak "/^terminal2=.*/d" $configfile
+        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=")" > "$configfile"
+        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=")" > "$configfile"
     	continue
     	;;
     -h|--help)
