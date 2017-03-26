@@ -284,19 +284,60 @@ get_vmlinuz_path(){
 	return 0
 }
 
+update_cp(){
+	cp "$1" "$2" &&
+	msg_out "updated $2" ||
+	wrn_out "failed to update $2"
+}
+
+update_mv(){
+	mv -f "$1" "$2" &&
+	msg_out "updated $2" ||
+	wrn_out "failed to update $2"
+}
+
+make_initrd(){
+	local initrd=$1
+	local kerver=$2
+	chroot edit mkinitramfs -o /"$initrd" "$kerver" &&
+	msg_out "$initrd successfully built.." ||
+	wrn_out "$initrd failed to be built (complete or partial)"
+}
+
 rebuild_initrd(){
     local initrd="$1"
     local kerver="$2"
-    mv edit/"$initrd" edit/"$initrd".old.link
+	local vmlinuz_path=edit/boot/vmlinuz-"$kerver"
+    mv -f edit/"$initrd" edit/"$initrd".old.link
     msg_out "Rebuilding initrd..."
     mount --bind /dev/ edit/dev
     chroot edit mount -t proc none /proc
     chroot edit mount -t sysfs none /sys
     chroot edit mount -t devpts none /dev/pts
-    chroot edit mkinitramfs -o /"$initrd" "$kerver" &&
-	msg_out "$initrd success." ||
-	wrn_out "$initrd failed (complete or partial)"
-    mv edit/"$initrd" extracted/"$JL_casper"/
+    make_initrd "$initrd" "$kerver"
+    update_mv edit/"$initrd" extracted/"$JL_casper"/
+	update_cp "$vmlinuz_path" extracted/"$JL_casper"/"$vmlinuz_name"
+	initrd1=$(get_initrd_name extracted/install)
+	if [ "$initrd1" != "" ]; then
+	    make_initrd "$initrd1" "$kerver"
+	    update_mv edit/"$initrd1" extracted/install/
+		update_cp "$vmlinuz_path" extracted/install/"$vmlinuz_name"
+	fi
+	initrd2=$(get_initrd_name extracted/install/gtk)
+	if [ "$initrd2" != "$initrd1" ] && [ "$initrd2" != "" ]; then
+	    make_initrd "$initrd2" "$kerver"
+	    update_mv edit/"$initrd2" extracted/install/gtk/
+		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
+	elif [ "$initrd2" != "" ]; then
+		update_cp -L edit/"$initrd1" extracted/install/gtk/
+		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
+	fi
+	if $JL_debian; then
+		#copy isolinux
+		update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		update_cp edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		update_cp edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null
+	fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
     chroot edit umount /dev/pts
@@ -578,10 +619,15 @@ jlcd_start(){
 	if [ "$vmlinuz" = '' ]; then
 		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
 		vmlinuz1=$(get_input "Enter the name of vmlinuz: ")
+		if [ "$vmlinuz" = "" ]; then
+			err_out "vmlinuz name can not be empty."
+			exit 1
+		fi
 		vmlinuz="extracted/$JL_casper/$vmlinuz1"
 	else
 		msg_out "Found vmlinuz: $vmlinuz"
 	fi
+	export vmlinuz_name=$(basename "$vmlinuz")
 	d=2
 	ker=""
 	msg_out "Kernel related Qs"
@@ -654,7 +700,7 @@ jlcd_start(){
 		genisoimage -U -A "$IMAGE_NAME" -V "$IMAGE_NAME" -volset "$IMAGE_NAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot . && msg_out 'Prepared UEFI image'
 		uefi_opt=--uefi
 	else
-		genisoimage -D -r -V "$IMAGE_NAME" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../"$cdname".iso .
+		genisoimage -D -r -V "$IMAGE_NAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
 		uefi_opt=
 	fi
 	if [ "$hybrid" = Y ] || [ "$hybrid" = y ]; then
