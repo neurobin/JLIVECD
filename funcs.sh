@@ -285,15 +285,15 @@ get_vmlinuz_path(){
 }
 
 update_cp(){
-	cp "$1" "$2" &&
+	cp -L "$1" "$2" &&
 	msg_out "updated $2" ||
 	wrn_out "failed to update $2"
 }
 
 update_mv(){
 	mv -f "$1" "$2" &&
-	msg_out "updated $2" ||
-	wrn_out "failed to update $2"
+	msg_out "updated $2/$(basename "$1")" ||
+	wrn_out "failed to update $2/$(basename "$1")"
 }
 
 make_initrd(){
@@ -324,19 +324,13 @@ rebuild_initrd(){
 		update_cp "$vmlinuz_path" extracted/install/"$vmlinuz_name"
 	fi
 	initrd2=$(get_initrd_name extracted/install/gtk)
-	if [ "$initrd2" != "$initrd1" ] && [ "$initrd2" != "" ]; then
-	    make_initrd "$initrd2" "$kerver"
-	    update_mv edit/"$initrd2" extracted/install/gtk/
+	if [ "$initrd2" = "$initrd1" ] && [ "$initrd2" != "" ]; then
+		update_cp extracted/install//"$initrd2" extracted/install/gtk/"$initrd2"
 		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
 	elif [ "$initrd2" != "" ]; then
-		update_cp -L edit/"$initrd1" extracted/install/gtk/
+	    make_initrd "$initrd2" "$kerver"
+	    update_mv edit/"$initrd2" extracted/install/gtk/"$initrd2"
 		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
-	fi
-	if $JL_debian; then
-		#copy isolinux
-		update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		update_cp edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		update_cp edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null
 	fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
@@ -345,12 +339,18 @@ rebuild_initrd(){
     mv edit/"$initrd".old.link edit/"$initrd" &&
     msg_out "edit/$initrd updated." ||
 	wrn_out "Could not update edit/$initrd"
+	if $JL_debian; then
+		#copy isolinux
+		cp -L edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		cp -L edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		cp -L edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null &&
+		msg_out "updated isolinux.bin" || wrn_out "failed to update isolinux.bin"
+	fi
 }
 
 jl_clean(){
 	kerver=$(uname -r)
 	cd "$livedir" #exported from jlcd_start
-	initrd="$(cat edit/initrd)"
 	rm -f edit/run/synaptic.socket
 	chroot edit aptitude clean 2>/dev/null
 	#chroot edit rm -r /mydir
@@ -375,27 +375,6 @@ jl_clean(){
 	  msg_out "edit/home cleaned!"
 	fi
 	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
-	msg_out "initrd archive type: $initrd detected!"
-	msg_out "Rebuilding initrd...\nThis step is needed if you have modified the kernel module, or init scripts.\n If you have installed new kernel and want to boot that kernel then skip this for now"
-
-	choice=$(get_yn "Have you modified init script or kernel module? (y/n)?: " $timeout)
-	c=1
-	if [ "$choice" != "y" ] && [ "$choice" != "Y" ]; then
-		c=2
-	fi
-	while [ $c -eq 1 ]
-	do
-	  if [ -d "edit/lib/modules/$kerver" ]; then
-		rebuild_initrd "$initrd" "$kerver"
-		c=2
-	  else
-		kerver="$(get_input "Enter live system kernel version (n to skip/default, take your time on this one): ")"
-	  fi
-	  if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
-		c=2
-	  fi
-	done
-
 }
 
 
@@ -529,15 +508,23 @@ jlcd_start(){
 		wrn_out "couldn't dtermine initrd name in: extracted/$JL_casper"
 		initrd="$(get_input "Enter the name of initrd archive: ")"
 	else
-		msg_out "Found initrd: $initrd"
+		msg_out "initrd: $initrd"
 	fi
-	#rm -f edit/initrd #name of the initrd is saved here.
-	echo "$initrd" > edit/initrd
+	[ "$initrd" !=  "" ] || err_exit "initrd name can not be empty"
+
+	################# managing vmlinuz ###################
+	msg_out "Finding vmlinuz ..."
+	vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
+	if [ "$vmlinuz" = '' ]; then
+		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
+		vmlinuz=$(get_input "Enter the name of vmlinuz: ")
+		[ "$vmlinuz" != "" ] || err_exit "vmlinuz name can not be empty."
+		vmlinuz="extracted/$JL_casper/$vmlinuz"
+	else
+		msg_out "vmlinuz: $vmlinuz"
+	fi
+	export vmlinuz_name=$(basename "$vmlinuz")
 	##############################Enable network connection####################################################################
-	#msg_out "Preparing network connection for chroot....."
-	#cp /"$JL_resolvconf" edit/"$JL_resolvconf"
-	#cp /etc/hosts edit/etc/
-	#msg_out "\tdone"
 	refresh_network
 	##############################Debcache management########################################################################
 	msg_out "Debcache Management starting. Moving deb files to edit/var/cache/apt/archives"
@@ -600,59 +587,29 @@ jlcd_start(){
 	msg_out "deb files moved. Debcache Management complete!"
 	##################################Cleaning...#########################################
 	jl_clean
-	# if [ -f "edit/$initrd" ]; then
-	#   cp -L edit/"$initrd" extracted/"$JL_casper"/
-	# else
-	#   msg_out "Assuming: you haven't modified the kernel modules or init scripts"
-	# fi
 	###############################Post Cleaning#####################################################################
 	msg_out "Cleaning system"
 	rm -f "$JL_lockF"
-	rm -f edit/initrd
 	rm -f edit/prepare
 	rm -f edit/help
 	msg_out "System Cleaned!"
 	##############################Checking for new installed kernel############################################################
 	kerver=0
-	msg_out "Finding vmlinuz ..."
-	vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
-	if [ "$vmlinuz" = '' ]; then
-		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
-		vmlinuz1=$(get_input "Enter the name of vmlinuz: ")
-		if [ "$vmlinuz" = "" ]; then
-			err_out "vmlinuz name can not be empty."
-			exit 1
-		fi
-		vmlinuz="extracted/$JL_casper/$vmlinuz1"
-	else
-		msg_out "Found vmlinuz: $vmlinuz"
-	fi
-	export vmlinuz_name=$(basename "$vmlinuz")
 	d=2
 	ker=""
-	msg_out "Kernel related Qs"
-	ker="$(get_yn "Have you installed new kernel and want to boot the new kernel in live cd/dvd: (y/n)?: " $timeout)"
+	msg_out "##### Init script & Kernel related #####\nRebuild the initrd if you have \n1. changed init scripts or kernel modules\n2. installed new kernel and want to boot that kernel in the live session."
+	ker="$(get_yn "Rebuild initrd: (y/n)?: " $timeout)"
 	if [ "$ker" = "y" ] || [ "$ker" = "Y" ]; then
 		d=1
 	fi
 	while [ $d -eq 1 ]
 	do
-	  kerver="$(get_input "Enter the kernel version (take your time on this one): ")"
+	  kerver="$(get_input "Enter the kernel version (take your time on this one) (n to skip): ")"
 	  if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
 		break
 	  fi
 	  vmlinuz_path=edit/boot/vmlinuz-"$kerver"
 	  if [ -f "$vmlinuz_path" ]; then
-	  	  msg_out "Updating vmlinuz ..."
-		  cp "$vmlinuz_path" "$vmlinuz" && msg_out "$vmlinuz updated." || err_out "$vmlinuz update failed!"
-		#   vmlinuz1=$(get_vmlinuz_path extracted/install)
-		#   if [ "$vmlinuz1" != '' ]; then
-		#   	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
-		#   fi
-		#   vmlinuz1=$(get_vmlinuz_path extracted/install/gtk)
-		#   if [ "$vmlinuz1" != '' ]; then
-		#   	cp "$vmlinuz_path" "$vmlinuz1" && msg_out "$vmlinuz1 updated." || err_out "$vmlinuz1 update failed!"
-		#   fi
 		  rebuild_initrd "$initrd" "$kerver"
 		  d=2
 	  fi
