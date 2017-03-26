@@ -80,7 +80,7 @@ update_prop_val(){
 		# sed -E -i.bak "s/^[[:blank:]]*(RetainHome=).*/\1$val/I" "$cf"
 		echo "$(awk "BEGIN{IGNORECASE=1} {sub(/^[[:blank:]]*$prop=.*$/,\"$prop=$val\");print}" "$cf")" > "$cf"
 	else
-		printf "\n${4+"# $h\\n"}$prop=$val\n" >> "$cf"
+		printf "${4+"\\n# $h\\n"}$prop=$val\n" >> "$cf"
 	fi
 }
 
@@ -361,14 +361,16 @@ jl_clean(){
 jlcd_start(){
 	export livedir=
 	export liveconfigfile=
-	export timeout=
 	if $JL_debian; then
 		msg_out "Running in Debian mode"
 	else
 		msg_out "Running in Ubuntu mode"
 	fi
-	JL_terminal1=$(get_prop_val "$JL_t1n" "$JL_configfile")
-	JL_terminal2=$(get_prop_val "$JL_t2n" "$JL_configfile")
+	set -a
+	. "$JL_configfile"
+	set +a
+	JL_terminal1=$TERMINAL1
+	JL_terminal2=$TERMINAL2
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
@@ -386,8 +388,8 @@ jlcd_start(){
 	yn="$JL_fresh"
 	livedir=""
 
-	timeout="$(get_prop_val "$JL_tmn" "$JL_configfile")"
-	if echo "$timeout" |grep -E '^[0-9]+$'; then
+	timeout=$TIMEOUT
+	if echo "$timeout" |grep -qE '^[0-9]+$'; then
 	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
 	  timeout=$JL_timeoutd
