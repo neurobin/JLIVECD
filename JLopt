@@ -33,8 +33,6 @@ cd $JLdir
 . ./defconf.sh
 . ./funcs.sh
 
-logdir="/usr/local/JLIVECD"
-configfile="$logdir/.config"
 
 opts=( "$@" )
 [[ ${opts[@]} == "" ]] && echo "$help" && exit 0;
@@ -52,43 +50,43 @@ case "${opts[$i]}" in
        	continue
        	;;
        -ra|--reset-all)
-       	mkdir -p "$logdir"
-       	echo "" > "$configfile"
+       	mkdir -p "$JLdir"
+       	echo "" > "$JL_configfile"
        	continue
        	;;
    -t|--timeout)
        	timeout="${opts[$((i+1))]}"
        	[[ $timeout =~ ^[0-9]+$ ]] || { echo "Bad value for timeout: '$timeout'";exit 1; }
        	timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
-       	update_prop_val "$JL_tmn" "$timeout" "$configfile" "Timeout value"
+       	update_prop_val "$JL_tmn" "$timeout" "$JL_configfile"
        	skip=true;
        	continue
        	;;
    -t1|--terminal1)
        	terminal1="${opts[$((i+1))]}"
        	command -v "$terminal1" >/dev/null 2>&1 || { echo "Invalid terminal command: '$terminal1'" ; exit 1; }
-       	update_prop_val "$JL_t1n" "$terminal" "$configfile" "Primary terminal"
+       	update_prop_val "$JL_t1n" "$terminal1" "$JL_configfile"
        	skip=true;
        	continue
        	;;
    -t2|--terminal2)
        	terminal2="${opts[$((i+1))]}"
        	command -v "$terminal2" >/dev/null 2>&1 || { echo "Invalid terminal command: '$terminal2'" ; exit 1; }
-       	update_prop_val "$JL_t2n" "$terminal2" "$configfile" "Secondary terminal"
+       	update_prop_val "$JL_t2n" "$terminal2" "$JL_configfile"
        	skip=true;
        	continue
    	    ;;
     -rt1|--reset-terminal1)
-        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=")" > "$configfile"
+        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=" "$JL_configfile")" > "$JL_configfile"
     	continue
     	;;
     -rt2|--reset-terminal2)
-        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=")" > "$configfile"
+        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=" "$JL_configfile")" > "$JL_configfile"
     	continue
     	;;
     -rt|--reset-terminal)
-        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=")" > "$configfile"
-        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=")" > "$configfile"
+        echo "$(grep -iv "^[[:blank:]]*$JL_t1n=" "$JL_configfile")" > "$JL_configfile"
+        echo "$(grep -iv "^[[:blank:]]*$JL_t2n=" "$JL_configfile")" > "$JL_configfile"
     	continue
     	;;
     -h|--help)

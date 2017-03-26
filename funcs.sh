@@ -75,12 +75,12 @@ update_prop_val(){
 	local prop="$1"
 	local val="$2"
 	local cf="$3"
-	local h="$4"
+	local h=$4
 	if chk_conf_prop "$prop" "$cf"; then
 		# sed -E -i.bak "s/^[[:blank:]]*(RetainHome=).*/\1$val/I" "$cf"
 		echo "$(awk "BEGIN{IGNORECASE=1} {sub(/^[[:blank:]]*$prop=.*$/,\"$prop=$val\");print}" "$cf")" > "$cf"
 	else
-		printf "\n#$h\n$prop=$val\n" >> "$cf"
+		printf "\n${4+"# $h\\n"}$prop=$val\n" >> "$cf"
 	fi
 }
 
@@ -95,9 +95,9 @@ get_yn(){
 	if [ "$timeout" = "" ]; then
 		read -p "$msg" yn >/dev/null
 	else
-	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
-	        err_exit "invalid timeout value: $timeout"
-	    fi
+	    # if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
+	    #     err_exit "invalid timeout value: $timeout"
+	    # fi
 		read -t "$timeout" -p "$msg" yn >/dev/null
 	fi
 	if [ "$yn" = y ]; then
@@ -134,9 +134,9 @@ get_input(){
 	if [ "$timeout" = "" ]; then
 		read -p "$msg" inp >/dev/null
 	else
-	    if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
-	        err_exit "invalid timeout value: $timeout"
-	    fi
+	    # if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
+	    #     err_exit "invalid timeout value: $timeout"
+	    # fi
 		read -t "$timeout" -p "$msg" inp >/dev/null
 	fi
 	echo "$inp" > /dev/stdout
@@ -367,8 +367,8 @@ jlcd_start(){
 	else
 		msg_out "Running in Ubuntu mode"
 	fi
-	JL_terminal1=$(get_prop_val terminal1 "$JL_configfile")
-	JL_terminal2=$(get_prop_val terminal2 "$JL_configfile")
+	JL_terminal1=$(get_prop_val "$JL_t1n" "$JL_configfile")
+	JL_terminal2=$(get_prop_val "$JL_t2n" "$JL_configfile")
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
@@ -386,11 +386,12 @@ jlcd_start(){
 	yn="$JL_fresh"
 	livedir=""
 
-	timeout="$(get_prop_val timeout "$JL_configfile")"
+	timeout="$(get_prop_val "$JL_tmn" "$JL_configfile")"
 	if echo "$timeout" |grep -E '^[0-9]+$'; then
 	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
 	  timeout=$JL_timeoutd
+	  wrn_out "invalid timeout value: $timeout"
 	fi
 
 	if [ -f "$JLIVEdirF" ]; then
