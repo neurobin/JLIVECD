@@ -95,9 +95,6 @@ get_yn(){
 	if [ "$timeout" = "" ]; then
 		read -p "$msg" yn >/dev/null
 	else
-	    # if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
-	    #     err_exit "invalid timeout value: $timeout"
-	    # fi
 		read -t "$timeout" -p "$msg" yn >/dev/null
 	fi
 	if [ "$yn" = y ]; then
@@ -134,9 +131,6 @@ get_input(){
 	if [ "$timeout" = "" ]; then
 		read -p "$msg" inp >/dev/null
 	else
-	    # if ! echo "$timeout" |grep -E '^[0-9]+$' >/dev/null; then
-	    #     err_exit "invalid timeout value: $timeout"
-	    # fi
 		read -t "$timeout" -p "$msg" inp >/dev/null
 	fi
 	echo "$inp" > /dev/stdout
@@ -169,29 +163,29 @@ to_lower(){
 expand_path() {
   case "$1" in
     ~[+-]*)
-      local content content_q
-      printf -v content_q '%q' "${1:2}"
-      eval "content=${1:0:2}${content_q}"
-      printf '%s\n' "$content" > /dev/stdout
-      ;;
+		local content content_q
+		printf -v content_q '%q' "${1:2}"
+		eval "content=${1:0:2}${content_q}"
+		printf '%s\n' "$content" > /dev/stdout
+		;;
     ~*)
-      local content content_q
-      printf -v content_q '%q' "${1:1}"
-      eval "content=~${content_q}"
-      printf '%s\n' "$content" > /dev/stdout
-      ;;
+		local content content_q
+		printf -v content_q '%q' "${1:1}"
+		eval "content=~${content_q}"
+		printf '%s\n' "$content" > /dev/stdout
+		;;
     *)
-      printf '%s\n' "$1" > /dev/stdout
-      ;;
+      	printf '%s\n' "$1" > /dev/stdout
+      	;;
   esac
 }
 
 refresh_network(){
 	if [ -f "$JLIVEdirF" ]; then
-	  livedir="$(cat "$JLIVEdirF")"
+	  	livedir="$(cat "$JLIVEdirF")"
 	else
-	  wrn_out "May be this is a new project, run JLstart instead"
-	  exit 1
+	  	wrn_out "May be this is a new project, run JLstart instead"
+	  	exit 1
 	fi
 	cd "$livedir"
 	msg_out "Preparing network connection for chroot in $livedir..."
@@ -208,40 +202,40 @@ fresh_start(){
 	d=1
 	while [ $c -eq 1 ]
 	do
-	  c=2
-	  livedir="$(get_input "Where do you want to save your project ? Choose a directory where you have full permission. Enter path: ")"
-	  livedir="$(expand_path "$livedir")"
-	  [ -d "$livedir" ] && wrn_out "$livedir exists, content will be overwritten" || mkdir -p "$livedir"
-	  if [ ! -d "$livedir" ]; then
-		c=1
-		err_out "invalid directory name/path: $livedir"
-	   fi
+		c=2
+		livedir="$(get_input "Where do you want to save your project ? Choose a directory where you have full permission. Enter path: ")"
+		livedir="$(expand_path "$livedir")"
+		[ -d "$livedir" ] && wrn_out "$livedir exists, content will be overwritten" || mkdir -p "$livedir"
+		if [ ! -d "$livedir" ]; then
+			c=1
+			err_out "invalid directory name/path: $livedir"
+		fi
 	done
 	cd "$livedir"
 	[ -d mnt ] && wrn_out "$livedir/mnt Exists, Content will be overwritten" || mkdir mnt
 	while [ $d -eq 1 ]
 	do
-	  d=2
-	  isopath="$(get_input "Enter the path to your base iso image: ")"
-	  isopath="$(expand_path "$isopath")"
-	  isofullpath=("${isopath}"*)
-	  if [ -f "$isofullpath" ]; then
-		iso="$(echo "$isofullpath" |tail -c 5)"
-		iso="$(to_lower "$iso")"
-		if [ "$iso" = ".iso" ]; then
-		  msg_out "Found iso: $isofullpath"
-		  echo "$isofullpath" > "$JLIVEisopathF"
+		d=2
+		isopath="$(get_input "Enter the path to your base iso image: ")"
+		isopath="$(expand_path "$isopath")"
+		isofullpath=("${isopath}"*)
+		if [ -f "$isofullpath" ]; then
+			iso="$(echo "$isofullpath" |tail -c 5)"
+			iso="$(to_lower "$iso")"
+			if [ "$iso" = ".iso" ]; then
+			  	msg_out "Found iso: $isofullpath"
+			  	echo "$isofullpath" > "$JLIVEisopathF"
+			else
+			  	d=1
+			  	wrn_out "selected file isn't an ISO image: $isofullpath"
+			fi
+		elif [ -f "$isofullpath.iso" ]; then
+			msg_out "Found iso: $isofullpath.iso"
+			echo "$isofullpath".iso > "$JLIVEisopathF"
 		else
-		  d=1
-		  wrn_out "selected file isn't an ISO image: $isofullpath"
+			d=1
+			wrn_out "couldn't find the iso"
 		fi
-	  elif [ -f "$isofullpath.iso" ]; then
-		msg_out "Found iso: $isofullpath.iso"
-		echo "$isofullpath".iso > "$JLIVEisopathF"
-	  else
-		d=1
-		wrn_out "couldn't find the iso"
-	  fi
 	done
 	[ -d extracted ] && wrn_out "$livedir/extracted exists, content will be overwritten" || mkdir extracted
 	rm -f "$JLIVEdirF"
@@ -261,9 +255,6 @@ get_initrd_name(){
 		echo initrd.img >/dev/stdout
 	else
 		return 1
-		# wrn_out "couldn't dtermine initrd name in: $path"
-		# local initrd="$(get_input "Enter the name of initrd archive: ")"
-		# echo "$initrd"  >/dev/stdout
 	fi
 	return 0
 }
@@ -277,9 +268,6 @@ get_vmlinuz_path(){
 		echo "$path/vmlinuz.efi"  >/dev/stdout
 	else
 		return 1
-		# wrn_out "Couldn't find vmlinuz in: $path"
-		# local vmlinuz=$(get_input "Enter the name of vmlinuz: ")
-		# echo "$path/$vmlinuz"  >/dev/stdout
 	fi
 	return 0
 }
@@ -317,21 +305,21 @@ rebuild_initrd(){
     make_initrd "$initrd" "$kerver"
     update_mv edit/"$initrd" extracted/"$JL_casper"/
 	update_cp "$vmlinuz_path" extracted/"$JL_casper"/"$vmlinuz_name"
-	initrd1=$(get_initrd_name extracted/install)
-	if [ "$initrd1" != "" ]; then
-	    make_initrd "$initrd1" "$kerver"
-	    update_mv edit/"$initrd1" extracted/install/
-		update_cp "$vmlinuz_path" extracted/install/"$vmlinuz_name"
-	fi
-	initrd2=$(get_initrd_name extracted/install/gtk)
-	if [ "$initrd2" = "$initrd1" ] && [ "$initrd2" != "" ]; then
-		update_cp extracted/install//"$initrd2" extracted/install/gtk/"$initrd2"
-		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
-	elif [ "$initrd2" != "" ]; then
-	    make_initrd "$initrd2" "$kerver"
-	    update_mv edit/"$initrd2" extracted/install/gtk/"$initrd2"
-		update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
-	fi
+	# initrd1=$(get_initrd_name extracted/install)
+	# if [ "$initrd1" != "" ]; then
+	#     make_initrd "$initrd1" "$kerver"
+	#     update_mv edit/"$initrd1" extracted/install/
+	# 	update_cp "$vmlinuz_path" extracted/install/"$vmlinuz_name"
+	# fi
+	# initrd2=$(get_initrd_name extracted/install/gtk)
+	# if [ "$initrd2" = "$initrd1" ] && [ "$initrd2" != "" ]; then
+	# 	update_cp extracted/install//"$initrd2" extracted/install/gtk/"$initrd2"
+	# 	update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
+	# elif [ "$initrd2" != "" ]; then
+	#     make_initrd "$initrd2" "$kerver"
+	#     update_mv edit/"$initrd2" extracted/install/gtk/"$initrd2"
+	# 	update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
+	# fi
     chroot edit umount /proc || chroot edit umount -lf /proc
     chroot edit umount /sys
     chroot edit umount /dev/pts
@@ -369,10 +357,10 @@ jl_clean(){
 	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
 	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
 	if [  "$homec" = Y ] || [ "$homec" = y ]; then
-	  msg_out "edit/home kept as it is"
+	  	msg_out "edit/home kept as it is"
 	else
-	  rm -rf edit/home/*
-	  msg_out "edit/home cleaned!"
+	  	rm -rf edit/home/*
+	  	msg_out "edit/home cleaned!"
 	fi
 	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 }
@@ -395,12 +383,12 @@ jlcd_start(){
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
 	if [ -f "$JL_lockf" ]; then
-	  err_out "another instance of this section is running or premature shutdown detected from a previous runYou need to finish that first or force your way through..."
-	  force=$(get_yn "Force start..(y/n)?: " 10)
-	  if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
-		msg_out "Aborted."
-		exit 1
-	  fi
+		err_out "another instance of this section is running or premature shutdown detected from a previous runYou need to finish that first or force your way through..."
+		force=$(get_yn "Force start..(y/n)?: " 10)
+		if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
+			msg_out "Aborted."
+			exit 1
+		fi
 	fi
 	echo "1" > "$JL_lockF"
 
@@ -410,66 +398,66 @@ jlcd_start(){
 
 	timeout=$TIMEOUT
 	if echo "$timeout" |grep -qE '^[0-9]+$'; then
-	  timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
+	  	timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
-	  timeout=$JL_timeoutd
-	  wrn_out "invalid timeout value: $timeout"
+	  	timeout=$JL_timeoutd
+	  	wrn_out "invalid timeout value: $timeout"
 	fi
 
 	if [ -f "$JLIVEdirF" ]; then
-	  livedir="$(cat "$JLIVEdirF")"
+	 	livedir="$(cat "$JLIVEdirF")"
 	fi
 
 	c=1
 	if [ "$yn" = "y" ]; then
-	  c=2
-	  cd "$livedir"
-	  isopath="$(cat "$JLIVEisopathF")"
-	  if [ -d edit ]; then
-		wrn_out "seems this isn't really a new project (edit directory exists),existing files will be overwritten!!! if you aren't sure what this warning is about, close this terminal and run again. If this is shown again, enter y and continue..."
-		cont=$(get_yn "Are you sure, you want to continue (y/n)?: " $timeout)
-		if [  "$cont" = "y" ] || [ "$cont" = "Y" ]; then
-		  msg_out "OK"
-		else
-		  msg_out "Exiting"
-		  exit 1
+		c=2
+		cd "$livedir"
+		isopath="$(cat "$JLIVEisopathF")"
+		if [ -d edit ]; then
+			wrn_out "seems this isn't really a new project (edit directory exists),existing files will be overwritten!!! if you aren't sure what this warning is about, close this terminal and run again. If this is shown again, enter y and continue..."
+			cont=$(get_yn "Are you sure, you want to continue (y/n)?: " $timeout)
+			if [  "$cont" = "y" ] || [ "$cont" = "Y" ]; then
+			 	msg_out "OK"
+			else
+			 	msg_out "Exiting"
+			 	exit 1
+			fi
 		fi
-	  fi
-	  mount -o loop "$isopath" mnt || wrn_out "failed to mount iso."
-	  rsync --exclude=/"$JL_casper"/filesystem.squashfs -a mnt/ extracted || err_exit "rsync failed"
-	  unsquashfs mnt/"$JL_casper"/filesystem.squashfs || err_exit "unsquashfs failed"
-	  mv squashfs-root edit || err_exit "couldn't move squashfs-root."
-	  umount mnt
+		mount -o loop "$isopath" mnt || wrn_out "failed to mount iso."
+		rsync --exclude=/"$JL_casper"/filesystem.squashfs -a mnt/ extracted || err_exit "rsync failed"
+		unsquashfs mnt/"$JL_casper"/filesystem.squashfs || err_exit "unsquashfs failed"
+		mv squashfs-root edit || err_exit "couldn't move squashfs-root."
+		umount mnt
 	fi
 	cd "$maindir"
 	c=1
 	while [ $c -eq 1 ]
 	do
-	  if [ "$yn" != "y" ]; then
-		msg_out "If you just hit enter it will take your previous choice (if any)"
-		livedir="$(get_input "Enter the directory path where you have saved your project: ")"
-		livedir="$(expand_path "$livedir")"
-		if [ "$livedir" = "" ]; then
-		  if [ -f "$JLIVEdirF" ]; then
-		    livedir="$(cat "$JLIVEdirF")"
-		    msg_out "previous: $livedir"
-		  fi
-		elif [ -d "$livedir" ]; then
-		  echo "$livedir" > "$JLIVEdirF"
+		if [ "$yn" != "y" ]; then
+			msg_out "If you just hit enter it will take your previous choice (if any)"
+			livedir="$(get_input "Enter the directory path where you have saved your project: ")"
+			livedir="$(expand_path "$livedir")"
+			if [ "$livedir" = "" ]; then
+				if [ -f "$JLIVEdirF" ]; then
+					livedir="$(cat "$JLIVEdirF")"
+					msg_out "previous: $livedir"
+				fi
+			elif [ -d "$livedir" ]; then
+			  	echo "$livedir" > "$JLIVEdirF"
+			fi
 		fi
-	  fi
-	  if [ "$livedir" != "" ]; then
-		c=2
-	  else
-		c=1
-		err_out "invalid directory: $livedir"
-	  fi
-	  if [ -d "$livedir" ]; then
-		c=2
-	  else
-		c=1
-		err_out "directory doesn't exist: $livedir"
-	  fi
+		if [ "$livedir" != "" ]; then
+			c=2
+		else
+			c=1
+			err_out "invalid directory: $livedir"
+		fi
+		if [ -d "$livedir" ]; then
+			c=2
+		else
+			c=1
+			err_out "directory doesn't exist: $livedir"
+		fi
 	done
 	liveconfigfile="$livedir/.config"
 	touch "$liveconfigfile"
@@ -507,9 +495,8 @@ jlcd_start(){
 	if [ "$initrd" = ''  ]; then
 		wrn_out "couldn't dtermine initrd name in: extracted/$JL_casper"
 		initrd="$(get_input "Enter the name of initrd archive: ")"
-	else
-		msg_out "initrd: $initrd"
 	fi
+	msg_out "initrd: $initrd"
 	[ "$initrd" !=  "" ] || err_exit "initrd name can not be empty"
 
 	################# managing vmlinuz ###################
@@ -517,13 +504,12 @@ jlcd_start(){
 	vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
 	if [ "$vmlinuz" = '' ]; then
 		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
-		vmlinuz=$(get_input "Enter the name of vmlinuz: ")
-		[ "$vmlinuz" != "" ] || err_exit "vmlinuz name can not be empty."
-		vmlinuz="extracted/$JL_casper/$vmlinuz"
-	else
-		msg_out "vmlinuz: $vmlinuz"
+		vmlinuz_name=$(get_input "Enter the name of vmlinuz: ")
+		vmlinuz="extracted/$JL_casper/$vmlinuz_name"
 	fi
 	export vmlinuz_name=$(basename "$vmlinuz")
+	msg_out "vmlinuz: $vmlinuz_name"
+	[ "$vmlinuz_name" != "" ] || err_exit "vmlinuz name can not be empty."
 	##############################Enable network connection####################################################################
 	refresh_network
 	##############################Debcache management########################################################################
@@ -622,6 +608,7 @@ jlcd_start(){
 	#check for hybrid
 	hybrid=$(get_prop_yn "$JL_hbpn" "$liveconfigfile" "Want hybrid image" "$timeout")
 	update_prop_val "$JL_hbpn" "$liveconfigfile" "Whether the image to be built is a hybrid image."
+	msg_out "FASTCOMPRESSION=$fastcomp\n*** UEFI=$uefi\n*** HYBRID=$hybrid"
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
@@ -661,7 +648,7 @@ jlcd_start(){
 		uefi_opt=
 	fi
 	if [ "$hybrid" = Y ] || [ "$hybrid" = y ]; then
-		isohybrid $uefi_opt ../"$cdname".iso && msg_out "Converted to hybrid image"
+		isohybrid $uefi_opt ../"$cdname".iso && msg_out "Converted to hybrid image" || wrn_out "Could not convert to hybrid image"
 	fi
 	cd ..
 	msg_out "Finalizing image"
