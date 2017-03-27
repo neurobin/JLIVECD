@@ -374,9 +374,6 @@ jlcd_start(){
 	else
 		msg_out "Running in Ubuntu mode"
 	fi
-	set -a
-	. "$JL_configfile"
-	set +a
 	JL_terminal1=$TERMINAL1
 	JL_terminal2=$TERMINAL2
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'

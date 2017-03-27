@@ -7,6 +7,9 @@ cd $JLdir
 . ./funcs.sh
 mkdir -p "$JL_logdirtmp"
 
+set -a
+. "$JL_configfile" | true
+set +a
 
 trap finish EXIT
 trap finish SIGTERM

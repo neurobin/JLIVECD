@@ -4,6 +4,10 @@ cd $JLdir
 . ./defconf.sh
 . ./funcs.sh
 
+set -a
+. "$JL_configfile" | true
+set +a
+
 chkroot
 
 if [ "$1" = -db ]; then

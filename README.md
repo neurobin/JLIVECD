@@ -105,7 +105,7 @@ In your project directory, you will find some default files/directories. Don't c
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
 * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
 * `mnt`: A directory used only for mounting ISO image.
-* `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install source packages and files that you need to store for future but do not want them to be included in the ISO.
+* `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install source packages and files that you need to store for future but do not want to include them in the ISO.
 
 **The files are:**
 
@@ -153,13 +153,10 @@ I call it debcache management!
 
 # ChangeLog:
 
-### version 2.2.2
+### version 2.3.1
 
-* Debian support (complete, experimental)
-
-### version 2.2.1
-
-* Debian support (windows installer not supported)
+* Debian support
+* Dynamic cofiguration is possible through configuration file.
 
 ### version 2.1.3
 
