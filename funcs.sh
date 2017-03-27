@@ -607,7 +607,7 @@ jlcd_start(){
 	update_prop_val "$JL_ufpn" "$uefi" "$liveconfigfile" "Whether the image to be built is a UEFI image"
 	#check for hybrid
 	hybrid=$(get_prop_yn "$JL_hbpn" "$liveconfigfile" "Want hybrid image" "$timeout")
-	update_prop_val "$JL_hbpn" "$liveconfigfile" "Whether the image to be built is a hybrid image."
+	update_prop_val "$JL_hbpn" "$hybrid" "$liveconfigfile" "Whether the image to be built is a hybrid image."
 	msg_out "FASTCOMPRESSION=$fastcomp\n*** UEFI=$uefi\n*** HYBRID=$hybrid"
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
