@@ -327,13 +327,13 @@ rebuild_initrd(){
     mv edit/"$initrd".old.link edit/"$initrd" &&
     msg_out "edit/$initrd updated." ||
 	wrn_out "Could not update edit/$initrd"
-	# if $JL_debian; then
-	# 	#copy isolinux
-	# 	cp -L edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-	# 	cp -L edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-	# 	cp -L edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null &&
-	# 	msg_out "updated isolinux.bin" || wrn_out "failed to update isolinux.bin"
-	# fi
+	if $JL_debian; then
+		#copy isolinux
+		cp -L edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		cp -L edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		cp -L edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null &&
+		msg_out "updated isolinux.bin" || wrn_out "failed to update isolinux.bin"
+	fi
 }
 
 jl_clean(){
