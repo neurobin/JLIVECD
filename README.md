@@ -97,7 +97,9 @@ Run `JLstart -db` in a terminal or run it from `menu->system->JLIVECD` and follo
 
 # Directories & Files:
 
-In your project directory, you will find some default directories. Don't change their names. The directories are:
+In your project directory, you will find some default files/directories. Don't change their names.
+
+**The directories are:**
 
 * `debcache`: `.deb` files are kept here. See the special feature section for more details.
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
@@ -105,8 +107,10 @@ In your project directory, you will find some default directories. Don't change 
 * `mnt`: A directory used only for mounting ISO image.
 * `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install source packages and files that you need to store for future references.
 
-There's also a file named `.config`, which contains configuration of the corresponding project i.e DiskName and some other defaults.
+**The files are:**
 
+* `.config`: configuration of the corresponding project i.e DiskName and some other defaults.
+* `config.conf`: Final configuration managed by user. This is essentially a bash script and thus you can make intelligent use of it and set dynamic options. Any non-empty value set to a variable (option) will bypass its input prompt.
 
 
 # Things to care:
