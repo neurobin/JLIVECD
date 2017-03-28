@@ -441,7 +441,8 @@ jl_clean(){
 	if [ -d edit/mydir ]; then
 		mv -f edit/mydir ./
 	fi
-	rm -rf edit/tmp/* edit/root/.bash_history
+	rm -rf edit/tmp/*
+	#rm edit/root/.bash_history # it is convenient to not delete it by default. You should clean up in final build manually.
 	rm edit/var/lib/dbus/machine-id
 	rm edit/sbin/initctl
 	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
