@@ -1,7 +1,7 @@
 #!/bin/bash
 project='JLIVECD'
 description='Live CD/DVD customization tool'
-version='2.3.3'
+version='2.3.4'
 bugurl='https://github.com/neurobin/JLIVECD/issues'
 author='Md. Jahidul Hamid <jahidulhamid@yahoo.com>'
 source='https://github.com/neurobin/JLIVECD'
@@ -25,7 +25,6 @@ JLopt [options]
 -ra  : factory reset all.
 -rn  : refresh network. Runs JLRefreshNetwork
 -t   : set timeout
--crt : set chroot command
 -u   : uninstall
 -h   : show help menu.
 "
@@ -91,13 +90,6 @@ case "${opts[$i]}" in
         echo "$(grep -iv "^[[:blank:]]*$JL_t2n=" "$JL_configfile")" > "$JL_configfile"
     	continue
     	;;
-    -crt|--chroot)
-        chroot="${opts[$((i+1))]}"
-       	command -v "$chroot" >/dev/null 2>&1 || { echo "Invalid chroot command: '$chroot'" ; exit 1; }
-       	update_prop_val "$JL_crtn" "$chroot" "$JL_configfile"
-       	skip=true;
-        continue
-        ;;
     -u|--uninstall)
     	sudo -k rm -rf "$JLdir" "$JL_logdirtmp" 2>/dev/null
     	sudo rm /usr/bin/jlstart /bin/JLstart /usr/bin/updarp "$JL_lockF" /usr/share/applications/JLIVECD.desktop /bin/JLopt /usr/bin/jlopt 2>/dev/null

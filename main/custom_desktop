@@ -26,11 +26,6 @@ else
 	JL_fresh=n
 fi
 
-if [ "$CHROOT" = schroot ]; then
-	CHROOT="$CHROOT -c"
-fi
-
-msg_out "chroot command: '$CHROOT'"
 echo
 echo "***********************************************"
 echo "*** default value for (Y/n) prompts is 'n'  ***"

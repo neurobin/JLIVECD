@@ -182,11 +182,11 @@ refresh_network(){
 	  	exit 1
 	fi
 	cd "$livedir"
-	msg_out "Preparing network connection for $CHROOT in $livedir..."
+	msg_out "Preparing network connection for chrootin $livedir..."
 	cp /etc/hosts edit/etc/
 	rm edit/etc/resolv.conf
 	cp -L /etc/resolv.conf edit/etc/
-	msg_out "Network connection shlould be available in $CHROOT now....."
+	msg_out "Network connection shlould be available in chroot now....."
 }
 
 fresh_start(){
@@ -407,7 +407,7 @@ finish(){
 make_initrd(){
 	local initrd=$1
 	local kerver=$2
-	$CHROOT edit mkinitramfs -o /"$initrd" "$kerver" &&
+	$CHROOT mkinitramfs -o /"$initrd" "$kerver" &&
 	msg_out "$initrd successfully built.." ||
 	wrn_out "$initrd failed to be built (complete or partial)"
 }
@@ -436,13 +436,12 @@ jl_clean(){
 	kerver=$(uname -r)
 	cd "$livedir" #exported from jlcd_start
 	rm -f edit/run/synaptic.socket
-	$CHROOT edit aptitude clean 2>/dev/null
-	$CHROOT edit rm -rf /tmp/* ~/.bash_history
-	$CHROOT edit dpkg-divert --rename --remove /sbin/initctl 2>/dev/null
-	#$CHROOT edit rm -r /mydir
+	$CHROOT aptitude clean 2>/dev/null
+	$CHROOT dpkg-divert --rename --remove /sbin/initctl 2>/dev/null |sed 's/^/\n*** /'
 	if [ -d edit/mydir ]; then
 		mv -f edit/mydir ./
 	fi
+	rm -rf edit/tmp/* edit/root/.bash_history
 	rm edit/var/lib/dbus/machine-id
 	rm edit/sbin/initctl
 	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
@@ -561,6 +560,18 @@ jlcd_start(){
 	fi
 	set +a
 
+	if [ "$CHROOT" = "" ]; then
+		CHROOT='chroot ./edit'
+	elif ! command -v $CHROOT >/dev/null 2>&1; then
+		wrn_out "invalid chroot command: $CHROOT\n--- falling back to default chroot."
+		CHROOT='chroot ./edit'
+	elif ! echo "$CHROOT" |grep -qE '^[[:blank:]]*s{0,1}chroot[[:blank:]]+[^[:blank:]]'; then
+		wrn_out "invalid chroot command: $CHROOT\n--- falling back to default chroot."
+		CHROOT='chroot ./edit'
+	fi
+
+	msg_out "chroot command: $CHROOT"
+
 	cdname="$(get_prop_input "$JL_dnpn" "$liveconfigfile" "Enter your desired (customized) cd/dvd name: ")"
 	iso="$(echo "$cdname" |tail -c 5)"
 	iso="$(to_lower "$iso")"
@@ -609,25 +620,25 @@ jlcd_start(){
 	xh=$(get_prop_yn "$JL_xhpn" "$liveconfigfile" "Enable access control (prevent GUI apps to run)" "$timeout")
 	update_prop_val "$JL_xhpn" "$xh" "$liveconfigfile" "Whether to prevent GUI apps to run."
 	if [ "$xh" != Y ] && [ "$xh" != y ]; then
-		xhost +
+		xhost + >/dev/null && msg_out "access control disabled"
 	else
-		xhost -
+		xhost - && msg_out "access control enabled"
 	fi
 
 	msg_out "installing updarp in chroot ..."
 	cp "$JLdir"/updarp edit/usr/bin/updarp
 
 	mount_fs
-	msg_out "Running $CHROOT terminal... \nWhen you are finished, run: exit or simply close the $CHROOT terminal. run 'cat help' or './help' to get help in $CHROOT terminal."
-	if ! $JL_terminal1 -e "$SHELL -c '$CHROOT ./edit ./prepare;HOME=/root LC_ALL=C $CHROOT ./edit;exec $SHELL'" 2>/dev/null; then
+	msg_out "Running chroot terminal... \nWhen you are finished, run: exit or simply close the chroot terminal. run 'cat help' or './help' to get help in chroot terminal."
+	if ! $JL_terminal1 -e "$SHELL -c '$CHROOT /prepare;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
 		wrn_out "couldn't run $JL_terminal1, trying $JL_terminal2..."
-		if ! $JL_terminal2 -e "$SHELL -c '$CHROOT ./edit ./prepare;HOME=/root LC_ALL=C $CHROOT ./edit;exec $SHELL'" 2>/dev/null; then
+		if ! $JL_terminal2 -e "$SHELL -c '$CHROOT /prepare;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
 			wrn_out "failed to run $JL_terminal2. Probably not installed!!"
-			choice1=$(get_yn "Want to continue without $CHROOT (Y/n)?: " $timeout)
+			choice1=$(get_yn "Want to continue without chroot(Y/n)?: " $timeout)
 			if [ "$choice1" = Y ] || [ "$choice1" = y ] ]];then
-			  msg_out "Continuing without $CHROOT. No modification will be done"
+			  msg_out "Continuing without chroot. No modification will be done"
 			else
-			  err_out "counldn't run the $CHROOT terminal, exiting..."
+			  err_out "counldn't run the chrootterminal, exiting..."
 			  exit 2
 			fi
 		fi
@@ -636,7 +647,7 @@ jlcd_start(){
 	msg_out "removing updarp ..."
 	rm edit/usr/bin/updarp
 	msg_out 'Restoring access control state'
-	xhost $bxhost && msg_out "xhost restored to initial state."  #leave this variable unquoted
+	xhost $bxhost | sed 's/^/\n*** /' && msg_out "xhost restored to initial state."  #leave this variable unquoted
 	##################################Debcache management############################################################
 	msg_out "Debcache Management starting. Moving .deb files to debcache"
 	cd "$livedir"
@@ -712,7 +723,7 @@ jlcd_start(){
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
 	chmod +w extracted/"$JL_casper"/filesystem.manifest 2>/dev/null
-	$CHROOT edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/"$JL_casper"/filesystem.manifest
+	$CHROOT dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/"$JL_casper"/filesystem.manifest
 	#no more CHROOT
 	umount_fs
 	cp extracted/"$JL_casper"/filesystem.manifest extracted/"$JL_casper"/filesystem.manifest-desktop

@@ -24,4 +24,4 @@
  JL_t1n=TERMINAL1
  JL_t2n=TERMINAL2
  JL_crtn=CHROOT
- CHROOT=chroot
+ CHROOT='chroot ./edit'
