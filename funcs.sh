@@ -296,15 +296,29 @@ abs_path(){
     fi
 }
 
+fstab_path(){
+	local path=$1
+	local s=
+	local c=
+	for i in $(seq 1 ${#path})
+	do
+		c=${path:i-1:1}
+		s="$s$(printf '\\0%o' "'$c")"
+	done
+	echo "$s"  >/dev/stdout
+}
+
 insert_fsentry_fstab(){
 	if [ "$edit" != "" ]; then
-		proc="proc ${edit}proc proc defaults 0 0"
-		sys="sysfs ${edit}sys sysfs defaults 0 0"
-		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
-		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		proc="proc $(fstab_path "${edit}proc") proc defaults 0 0"
+		sys="sysfs $(fstab_path "${edit}sys") sysfs defaults 0 0"
+		devpts="devpts $(fstab_path "${edit}dev/pts") devpts defaults 0 0"
+		dev="devtmpfs $(fstab_path "${edit}dev") devtmpfs defaults 0 0"
 		arr=("$dev" "$devpts" "$proc" "$sys")
 		for mp in "${arr[@]}"; do
-			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "added $mp in /etc/fstab"
+			local fs=$(echo "$mp" |awk '{print $1}')
+			mp=$(echo "$mp" |sed -e 's/\\/\\\\/g')
+			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "added $fs for $edit in /etc/fstab"
 		done
 	else
 		err_exit "\$edit can not be empty"
@@ -314,14 +328,15 @@ insert_fsentry_fstab(){
 remove_fsentry_fstab(){
 	local edit=$1
 	if [ "$edit" != "" ]; then
-		proc="proc ${edit}proc proc defaults 0 0"
-		sys="sysfs ${edit}sys sysfs defaults 0 0"
-		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
-		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		proc="proc $(fstab_path "${edit}proc") proc defaults 0 0"
+		sys="sysfs $(fstab_path "${edit}sys") sysfs defaults 0 0"
+		devpts="devpts $(fstab_path "${edit}dev/pts") devpts defaults 0 0"
+		dev="devtmpfs $(fstab_path "${edit}dev") devtmpfs defaults 0 0"
 		arr=("$dev" "$devpts" "$proc" "$sys")
 		for mp in "${arr[@]}"; do
+			local fs=$(echo "$mp" |awk '{print $1}')
 			pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
-			sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $mp from /etc/fstab"
+			sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $fs for $edit in /etc/fstab"
 		done
 	else
 		wrn_out "\$edit can not be empty"

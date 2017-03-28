@@ -141,12 +141,8 @@ umount_fs(){
 to_ascii_octal() {   LC_CTYPE=C printf '\\0%o' "'$1"; }
 NEW_LINE="
 "
-ecode_path(){
+fstab_path(){
 	local path=$1
-	# path=$(echo "$path" | tr '\n' "$(to_ascii_octal "$NEW_LINE")")
-	# while read -r -d $'\n' char; do
-	# 	echo "$char"
-	# done < <(echo "$path" |sed -e "s/./&\n/g")
 	local s=
 	local c=
 	for i in $(seq 1 ${#path})
@@ -157,7 +153,7 @@ ecode_path(){
 	echo "$s"  >/dev/stdout
 }
 
-ecode_path "fd sl ds kill	fd sed_fxrs
+fstab_path "fd sl ds kill	fd sed_fxrs
 fdsf  আ দ ক
 fdsf fd"
 
