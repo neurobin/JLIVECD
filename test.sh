@@ -77,34 +77,36 @@ fun(){
 	echo ${!b}
 }
 
-insert_into_fstab(){
-	if [ "$edit" = "" ]; then
+
+insert_fsentry_fstab(){
+	if [ "$edit" != "" ]; then
+		proc="proc ${edit}proc proc defaults 0 0"
+		sys="sysfs ${edit}sys sysfs defaults 0 0"
+		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
+		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		arr=("$dev" "$devpts" "$proc" "$sys")
+		for mp in "${arr[@]}"; do
+			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "insetred $mp in /etc/fstab"
+		done
+	else
 		err_exit "\$edit can not be empty"
 	fi
-	proc="proc $edit/proc proc defaults 0 0"
-	sys="sysfs $edit/sys sysfs defaults 0 0"
-	devpts="devpts $edit/dev/pts devpts defaults 0 0"
-	#dev="devtmpfs $edit/dev devtmpfs defaults 0 0"
-	arr=("$proc" "$sys" "$devpts")
-	cp /etc/fstab /etc/fstab.bkp
-	for mp in "${arr[@]}"; do
-		echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
-		sed -i.bak -e "$ a $mp" /etc/fstab
-	done
 }
 
-remove_from_fstab(){
-	if [ "$edit" = "" ]; then
+remove_fsentry_fstab(){
+	if [ "$edit" != "" ]; then
+		proc="proc ${edit}proc proc defaults 0 0"
+		sys="sysfs ${edit}sys sysfs defaults 0 0"
+		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
+		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		arr=("$dev" "$devpts" "$proc" "$sys")
+		for mp in "${arr[@]}"; do
+			pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
+			sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $mp from /etc/fstab"
+		done
+	else
 		err_exit "\$edit can not be empty"
 	fi
-	proc="proc $edit/proc proc defaults 0 0"
-	sys="sysfs $edit/sys sysfs defaults 0 0"
-	devpts="devpts $edit/dev/pts devpts defaults 0 0"
-	arr=("$proc" "$sys" "$devpts")
-	cp /etc/fstab /etc/fstab.bkp
-	for mp in "${arr[@]}"; do
-		echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
-	done
 }
 
 
@@ -136,11 +138,34 @@ umount_fs(){
 	umount "$edit"/dev/pts
 }
 
-# edit=edit
-# insert_into_fstab
-# remove_from_fstab
-
-f(){
-	trap 'echo fdkls' EXIT
+to_ascii_octal() {   LC_CTYPE=C printf '\\0%o' "'$1"; }
+NEW_LINE="
+"
+ecode_path(){
+	local path=$1
+	# path=$(echo "$path" | tr '\n' "$(to_ascii_octal "$NEW_LINE")")
+	# while read -r -d $'\n' char; do
+	# 	echo "$char"
+	# done < <(echo "$path" |sed -e "s/./&\n/g")
+	local s=
+	local c=
+	for i in $(seq 1 ${#path})
+	do
+		c=${path:i-1:1}
+		s="$s$(printf '\\0%o' "'$c")"
+	done
+	echo "$s"  >/dev/stdout
 }
-f
+
+ecode_path "fd sl ds kill	fd sed_fxrs
+fdsf  আ দ ক
+fdsf fd"
+
+#edit=edit
+# insert_fsentry_fstab
+# remove_fsentry_fstab
+
+# f(){
+# 	trap 'echo fdkls' EXIT
+# }
+# f

@@ -303,10 +303,8 @@ insert_fsentry_fstab(){
 		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
 		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
 		arr=("$dev" "$devpts" "$proc" "$sys")
-		cp /etc/fstab /etc/fstab.bkp
 		for mp in "${arr[@]}"; do
-			#echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
-			sed -i.bak -e "$ a $mp" /etc/fstab
+			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "added $mp in /etc/fstab"
 		done
 	else
 		err_exit "\$edit can not be empty"
@@ -314,17 +312,20 @@ insert_fsentry_fstab(){
 }
 
 remove_fsentry_fstab(){
-	livedir=$(cat "$JLIVEdirF")
-	edit=${livedir+$livedir/}edit
-	proc="proc ${edit}/proc proc defaults 0 0"
-	sys="sysfs ${edit}/sys sysfs defaults 0 0"
-	devpts="devpts ${edit}/dev/pts devpts defaults 0 0"
-	dev="devtmpfs ${edit}/dev devtmpfs defaults 0 0"
-	arr=("$dev" "$devpts" "$proc" "$sys")
-	cp /etc/fstab /etc/fstab.bkp
-	for mp in "${arr[@]}"; do
-		echo "$(grep -vxF "$mp" /etc/fstab)" >/etc/fstab
-	done
+	local edit=$1
+	if [ "$edit" != "" ]; then
+		proc="proc ${edit}proc proc defaults 0 0"
+		sys="sysfs ${edit}sys sysfs defaults 0 0"
+		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
+		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		arr=("$dev" "$devpts" "$proc" "$sys")
+		for mp in "${arr[@]}"; do
+			pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
+			sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $mp from /etc/fstab"
+		done
+	else
+		wrn_out "\$edit can not be empty"
+	fi
 }
 
 mount_fs(){
@@ -341,28 +342,28 @@ mount_fs(){
 
 umount_fs(){
 	livedir=$(cat "$JLIVEdirF")
-	edit=${livedir+$livedir/}edit
-	if mount |awk '{print $3}' |grep -qF "${edit}"/proc; then
-		if umount "${edit}"/proc || umount -lf "${edit}"/proc ; then
+	edit=${livedir+$livedir/}edit/
+	if mount |awk '{print $3}' |grep -qF "${edit}"proc; then
+		if umount "${edit}"proc || umount -lf "${edit}"proc ; then
 			msg_out "unmount proc success"
 		fi
 	fi
-	if mount |awk '{print $3}' |grep -qF "${edit}"/sys; then
-		if umount "${edit}"/sys || umount -lf "${edit}"/sys ; then
+	if mount |awk '{print $3}' |grep -qF "${edit}"sys; then
+		if umount "${edit}"sys || umount -lf "${edit}"sys ; then
 			msg_out "unmount sys success"
 		fi
 	fi
-	if mount |awk '{print $3}' |grep -qF "${edit}"/dev/pts; then
-		if umount "${edit}"/dev/pts || umount -lf "${edit}"/dev/pts ; then
+	if mount |awk '{print $3}' |grep -qF "${edit}"dev/pts; then
+		if umount "${edit}"dev/pts || umount -lf "${edit}"dev/pts ; then
 			msg_out "unmount devpts success"
 		fi
 	fi
-	if mount |awk '{print $3}' |grep -qF "${edit}"/dev; then
-		if umount "${edit}"/dev || umount -lf "${edit}"/dev; then
+	if mount |awk '{print $3}' |grep -qF "${edit}"dev; then
+		if umount "${edit}"dev || umount -lf "${edit}"dev; then
 			msg_out "unmount dev success"
 		fi
 	fi
-	remove_fsentry_fstab
+	remove_fsentry_fstab "$edit"
 	rm -rf "$JL_lockF" 2>/dev/null
 	rm -rf "$JL_logdirtmp" 2>/dev/null
 }
