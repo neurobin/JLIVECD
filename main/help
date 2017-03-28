@@ -4,6 +4,20 @@ echo "
 .............This is the chroot terminal. Use it to modify your live system......
 ..............................Hints..............................
 .............Copy your downloaded .deb packages to /var/cache/apt/archives/
+
+.....................Graphical customization................................
+...........................................................................
+......You can run GUI tools like synaptic, software manger, settings-manager
+......etc.. if access control is disabled. To run the GUI tool, you will
+......have to enter the correct command in this chroot terminal.
+......For example, in xfce, the command xfce4-panel will run the panel itself
+......and with this, you get the chroot desktop right over your host one and
+......then you can run any GUI tool you want to configure them or do other tasks,
+......just don't forget to copy the config files or necessary files from its home
+......directory to edit/etc/skel or back them up somewhere to use later.
+
+.....................Customization using terminal...........................
+...........................................................................
 ......To update the repository:		apt-get update
 ......To upgrade the software packages:	apt-get upgrade
 ......To install a software/package:	apt-get install package_name
@@ -40,6 +54,7 @@ http://community.linuxmint.com/tutorial/view/1504
 For learning the basics of customizing live cd/dvd visit:
 http://community.linuxmint.com/tutorial/view/1784
 https://help.ubuntu.com/community/LiveCDCustomization
+https://wiki.debian.org/DebianInstaller/Modify/CD
 
 ****************************************************************
 "
