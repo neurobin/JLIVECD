@@ -119,8 +119,8 @@ In your project directory, you will find some default files/directories. Don't c
 
 # Things to care:
 
-1. Do not use quotation in file/folder path. `~/"some folder"` or `"~/some folder"` is invalid while `~/some folder` is valid.
-2. Do not use spaces, quotes in project path and do not use ntfs partition.
+1. **Quotation in prompts are taken as literal.** `~/"some folder"` and `"~/some folder"` are different. If you want spaces then give it as it is: `~/some folder`.
+2. **Do not use NTFS partition.**
 3. The default is `no` for all `yes/no` type prompts unless specified otherwise.
 
 # Some Tips & Tricks:
@@ -129,7 +129,7 @@ In your project directory, you will find some default files/directories. Don't c
 2. If you want to change the timeout value then run this code in a terminal in your main system: `JLopt -t timeout_value`. "timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout: `JLopt -t 12`
 3. JLIVECD seems to have problem running the `mate-terminal` properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
 4. You can change the default terminal JLIVECD uses for chroot. To change the primary default terminal run this code in a terminal in your main system: `JLopt -t1 actual-terminal-command`. To change the secondary default terminal: `JLopt -t2 actual-terminal-command`. For Ex. `JLopt -t1 gnome-terminal`
-5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as input automatically.
+5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as the input.
 6. You can use full path with or without `.iso`.
 
 # Special Feature:
@@ -144,8 +144,8 @@ I call it debcache management!
 
 # New features:
 
-* You can close the host and chroot terminal safely any time you want, simultaneous closing is also ok.
-* Possibility of using schroot as chroot program (untested).
+* You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
+* Possibility of using schroot as chroot program (experimental).
 
 # Tested OS:
 
