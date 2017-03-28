@@ -145,7 +145,6 @@ I call it debcache management!
 # New features:
 
 * You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
-* Possibility of using schroot as chroot program (experimental).
 
 # Tested OS:
 

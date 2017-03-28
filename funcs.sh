@@ -615,7 +615,7 @@ jlcd_start(){
 	fi
 
 	msg_out "installing updarp in chroot ..."
-	cp "$JLdir"/updarp edit/usr/local/bin/updarp
+	cp "$JLdir"/updarp edit/usr/bin/updarp
 
 	mount_fs
 	msg_out "Running $CHROOT terminal... \nWhen you are finished, run: exit or simply close the $CHROOT terminal. run 'cat help' or './help' to get help in $CHROOT terminal."
@@ -634,7 +634,7 @@ jlcd_start(){
 	fi
 
 	msg_out "removing updarp ..."
-	rm edit/usr/local/bin/updarp
+	rm edit/usr/bin/updarp
 	msg_out 'Restoring access control state'
 	xhost $bxhost && msg_out "xhost restored to initial state."  #leave this variable unquoted
 	##################################Debcache management############################################################

@@ -78,8 +78,8 @@ do
 		override="$1" #can be empty
 		;;
 	-p|--pool)
-		shift
-		crpool ${1+"$@"}
+		crpool ${2+"$2"} ${3+"$3"}
+		exit 0
 		;;
     -h|--help|*)
         echo "$help"
