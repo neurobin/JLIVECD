@@ -16,12 +16,6 @@ err_exit(){
 	exit 1
 }
 
-finish(){
- rm -rf "$JL_lockF" 2>/dev/null
- rm -rf "$JL_logdirtmp" 2>/dev/null
- msg_out "END ***"
-}
-
 chkroot(){
 	if [ "$(id -u)" != "0" ]; then
 	  err_out "root access required."
@@ -188,11 +182,11 @@ refresh_network(){
 	  	exit 1
 	fi
 	cd "$livedir"
-	msg_out "Preparing network connection for chroot in $livedir..."
+	msg_out "Preparing network connection for $CHROOT in $livedir..."
 	cp /etc/hosts edit/etc/
 	rm edit/etc/resolv.conf
 	cp -L /etc/resolv.conf edit/etc/
-	msg_out "Network connection shlould be available in chroot now....."
+	msg_out "Network connection shlould be available in $CHROOT now....."
 }
 
 fresh_start(){
@@ -273,21 +267,129 @@ get_vmlinuz_path(){
 }
 
 update_cp(){
-	cp -L "$1" "$2" &&
-	msg_out "updated $2" ||
-	wrn_out "failed to update $2"
+	if cp -L "$1" "$2"; then
+		msg_out "updated $2"
+		return 0
+	else
+		wrn_out "failed to update $2"
+		return 1
+	fi
 }
 
 update_mv(){
-	mv -f "$1" "$2" &&
-	msg_out "updated $2/$(basename "$1")" ||
-	wrn_out "failed to update $2/$(basename "$1")"
+	if mv -f "$1" "$2"; then
+		msg_out "updated $2/$(basename "$1")"
+		return 0
+	else
+		wrn_out "failed to update $2/$(basename "$1")"
+		return 1
+	fi
 }
+
+abs_path(){
+    if [ -d "$1" ]; then
+        cd "$1"
+        echo "$(pwd -P)"
+    else
+        cd "$(dirname "$1")"
+        echo "$(pwd -P)/$(basename "$1")"
+    fi
+}
+
+insert_fsentry_fstab(){
+	if [ "$edit" != "" ]; then
+		proc="proc ${edit}proc proc defaults 0 0"
+		sys="sysfs ${edit}sys sysfs defaults 0 0"
+		devpts="devpts ${edit}dev/pts devpts defaults 0 0"
+		dev="devtmpfs ${edit}dev devtmpfs defaults 0 0"
+		arr=("$dev" "$devpts" "$proc" "$sys")
+		cp /etc/fstab /etc/fstab.bkp
+		for mp in "${arr[@]}"; do
+			#echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
+			sed -i.bak -e "$ a $mp" /etc/fstab
+		done
+	else
+		err_exit "\$edit can not be empty"
+	fi
+}
+
+remove_fsentry_fstab(){
+	livedir=$(cat "$JLIVEdirF")
+	edit=${livedir+$livedir/}edit
+	proc="proc ${edit}/proc proc defaults 0 0"
+	sys="sysfs ${edit}/sys sysfs defaults 0 0"
+	devpts="devpts ${edit}/dev/pts devpts defaults 0 0"
+	dev="devtmpfs ${edit}/dev devtmpfs defaults 0 0"
+	arr=("$dev" "$devpts" "$proc" "$sys")
+	cp /etc/fstab /etc/fstab.bkp
+	for mp in "${arr[@]}"; do
+		echo "$(grep -vxF "$mp" /etc/fstab)" >/etc/fstab
+	done
+}
+
+mount_fs(){
+	if [ "$edit" != "" ]; then
+		insert_fsentry_fstab
+		mount  devtmpfs "${edit}"dev -t devtmpfs && msg_out 'mounted dev'
+		mount  devpts "${edit}"dev/pts -t devpts && msg_out 'mounted devpts'
+		mount  proc "${edit}"proc -t proc && msg_out 'mounted proc'
+		mount  sysfs "${edit}"sys -t sysfs && msg_out 'mounted sysfs'
+	else
+		err_exit "\$edit can not be empty"
+	fi
+}
+
+umount_fs(){
+	livedir=$(cat "$JLIVEdirF")
+	edit=${livedir+$livedir/}edit
+	if mount |awk '{print $3}' |grep -qF "${edit}"/proc; then
+		if umount "${edit}"/proc || umount -lf "${edit}"/proc ; then
+			msg_out "unmount proc success"
+		fi
+	fi
+	if mount |awk '{print $3}' |grep -qF "${edit}"/sys; then
+		if umount "${edit}"/sys || umount -lf "${edit}"/sys ; then
+			msg_out "unmount sys success"
+		fi
+	fi
+	if mount |awk '{print $3}' |grep -qF "${edit}"/dev/pts; then
+		if umount "${edit}"/dev/pts || umount -lf "${edit}"/dev/pts ; then
+			msg_out "unmount devpts success"
+		fi
+	fi
+	if mount |awk '{print $3}' |grep -qF "${edit}"/dev; then
+		if umount "${edit}"/dev || umount -lf "${edit}"/dev; then
+			msg_out "unmount dev success"
+		fi
+	fi
+	remove_fsentry_fstab
+	rm -rf "$JL_lockF" 2>/dev/null
+	rm -rf "$JL_logdirtmp" 2>/dev/null
+}
+
+trap_with_arg() {
+    func="$1" ; shift
+    for sig in "$@" ; do
+        trap "$func $sig" "$sig"
+    done
+}
+
+finish(){
+	umount_fs #backup unmounter
+	if [ "$1" != "EXIT" ];then
+		wrn_out "interrupted by signal: $1"
+		exit 1
+	else
+		msg_out "END ***"
+		exit 0
+	fi
+}
+
 
 make_initrd(){
 	local initrd=$1
 	local kerver=$2
-	chroot edit mkinitramfs -o /"$initrd" "$kerver" &&
+	$CHROOT edit mkinitramfs -o /"$initrd" "$kerver" &&
 	msg_out "$initrd successfully built.." ||
 	wrn_out "$initrd failed to be built (complete or partial)"
 }
@@ -298,41 +400,17 @@ rebuild_initrd(){
 	local vmlinuz_path=edit/boot/vmlinuz-"$kerver"
     mv -f edit/"$initrd" edit/"$initrd".old.link
     msg_out "Rebuilding initrd..."
-    mount --bind /dev/ edit/dev
-    chroot edit mount -t proc none /proc
-    chroot edit mount -t sysfs none /sys
-    chroot edit mount -t devpts none /dev/pts
     make_initrd "$initrd" "$kerver"
     update_mv edit/"$initrd" extracted/"$JL_casper"/
 	update_cp "$vmlinuz_path" extracted/"$JL_casper"/"$vmlinuz_name"
-	# initrd1=$(get_initrd_name extracted/install)
-	# if [ "$initrd1" != "" ]; then
-	#     make_initrd "$initrd1" "$kerver"
-	#     update_mv edit/"$initrd1" extracted/install/
-	# 	update_cp "$vmlinuz_path" extracted/install/"$vmlinuz_name"
-	# fi
-	# initrd2=$(get_initrd_name extracted/install/gtk)
-	# if [ "$initrd2" = "$initrd1" ] && [ "$initrd2" != "" ]; then
-	# 	update_cp extracted/install//"$initrd2" extracted/install/gtk/"$initrd2"
-	# 	update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
-	# elif [ "$initrd2" != "" ]; then
-	#     make_initrd "$initrd2" "$kerver"
-	#     update_mv edit/"$initrd2" extracted/install/gtk/"$initrd2"
-	# 	update_cp "$vmlinuz_path" extracted/install/gtk/"$vmlinuz_name"
-	# fi
-    chroot edit umount /proc || chroot edit umount -lf /proc
-    chroot edit umount /sys
-    chroot edit umount /dev/pts
-    umount edit/dev || umount -lf edit/dev
     mv edit/"$initrd".old.link edit/"$initrd" &&
     msg_out "edit/$initrd updated." ||
 	wrn_out "Could not update edit/$initrd"
 	if $JL_debian; then
 		#copy isolinux
-		cp -L edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		cp -L edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		cp -L edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null &&
-		msg_out "updated isolinux.bin" || wrn_out "failed to update isolinux.bin"
+		update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		update_cp edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+		update_cp edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null
 	fi
 }
 
@@ -340,20 +418,15 @@ jl_clean(){
 	kerver=$(uname -r)
 	cd "$livedir" #exported from jlcd_start
 	rm -f edit/run/synaptic.socket
-	chroot edit aptitude clean 2>/dev/null
-	#chroot edit rm -r /mydir
+	$CHROOT edit aptitude clean 2>/dev/null
+	$CHROOT edit rm -rf /tmp/* ~/.bash_history
+	$CHROOT edit dpkg-divert --rename --remove /sbin/initctl 2>/dev/null
+	#$CHROOT edit rm -r /mydir
 	if [ -d edit/mydir ]; then
 		mv -f edit/mydir ./
 	fi
-	chroot edit rm -rf /tmp/* ~/.bash_history
-	chroot edit rm /var/lib/dbus/machine-id
-	chroot edit rm /sbin/initctl
-	chroot edit dpkg-divert --rename --remove /sbin/initctl 2>/dev/null
-	chroot edit umount /proc || chroot edit umount -lf /proc
-	chroot edit umount /sys
-	chroot edit umount /dev/pts
-	umount edit/dev || umount -lf edit/dev
-	rm -f "$JL_lockF"
+	rm edit/var/lib/dbus/machine-id
+	rm edit/sbin/initctl
 	msg_out "You have $timeout seconds each to answere the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
 	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
 	if [  "$homec" = Y ] || [ "$homec" = y ]; then
@@ -365,10 +438,10 @@ jl_clean(){
 	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 }
 
-
 jlcd_start(){
 	export livedir=
 	export liveconfigfile=
+	export edit=
 	if $JL_debian; then
 		msg_out "Running in Debian mode"
 	else
@@ -397,8 +470,8 @@ jlcd_start(){
 	if echo "$timeout" |grep -qE '^[0-9]+$'; then
 	  	timeout=$(echo $timeout |sed "s/^0*\([1-9]\)/\1/;s/^0*$/0/")
 	else
+		wrn_out "invalid timeout value: '$timeout'"
 	  	timeout=$JL_timeoutd
-	  	wrn_out "invalid timeout value: $timeout"
 	fi
 
 	if [ -f "$JLIVEdirF" ]; then
@@ -424,6 +497,7 @@ jlcd_start(){
 		rsync --exclude=/"$JL_casper"/filesystem.squashfs -a mnt/ extracted || err_exit "rsync failed"
 		unsquashfs mnt/"$JL_casper"/filesystem.squashfs || err_exit "unsquashfs failed"
 		mv squashfs-root edit || err_exit "couldn't move squashfs-root."
+		edit=$(abs_path edit)/ #must end with a slash
 		umount mnt
 	fi
 	cd "$maindir"
@@ -459,6 +533,9 @@ jlcd_start(){
 	liveconfigfile="$livedir/.config"
 	touch "$liveconfigfile"
 	chmod 777 "$liveconfigfile"
+	edit=$(abs_path "$livedir/edit")/ #must end with a slash
+	#we got a valid $edit now
+	insert_fsentry_fstab
 
 	set -a
 	if [ -f "$livedir/$JL_sconf"  ]; then
@@ -486,27 +563,6 @@ jlcd_start(){
 	cp main/help "$livedir"/edit/help
 	cd "$livedir"
 	msg_out "Entered into directory $livedir"
-	##################### managing initrd################
-	msg_out "Finding initrd name ..."
-	initrd=$(get_initrd_name "extracted/$JL_casper")
-	if [ "$initrd" = ''  ]; then
-		wrn_out "couldn't dtermine initrd name in: extracted/$JL_casper"
-		initrd="$(get_input "Enter the name of initrd archive: ")"
-	fi
-	msg_out "initrd: $initrd"
-	[ "$initrd" !=  "" ] || err_exit "initrd name can not be empty"
-
-	################# managing vmlinuz ###################
-	msg_out "Finding vmlinuz ..."
-	vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
-	if [ "$vmlinuz" = '' ]; then
-		wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
-		vmlinuz_name=$(get_input "Enter the name of vmlinuz: ")
-		vmlinuz="extracted/$JL_casper/$vmlinuz_name"
-	fi
-	export vmlinuz_name=$(basename "$vmlinuz")
-	msg_out "vmlinuz: $vmlinuz_name"
-	[ "$vmlinuz_name" != "" ] || err_exit "vmlinuz name can not be empty."
 	##############################Enable network connection####################################################################
 	refresh_network
 	##############################Debcache management########################################################################
@@ -526,7 +582,6 @@ jlcd_start(){
 	chmod 777 edit/mydir
 	msg_out 'use edit/mydir to store files that are not supposed to be included in the resultant livecd. This directory content persisits and thus you can keep source packages and other files here. An octal 777 permission is set for this directory, thus no root privilege required to copy files.'
 	##############################Create chroot environment and prepare it for use#############################################
-	mount --bind /dev/ edit/dev
 	msg_out "Detecting access control state"
 	if xhost | grep 'access control enabled' >/dev/null; then
 		bxhost='-'
@@ -543,20 +598,27 @@ jlcd_start(){
 		xhost -
 	fi
 
-	msg_out "Running chroot terminal... \nWhen you are finished, run: exit or simply close the chroot terminal. run 'cat help' or './help' to get help in chroot terminal."
-	if ! $JL_terminal1 -e "$SHELL -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec $SHELL'" 2>/dev/null; then
+	msg_out "installing updarp in chroot ..."
+	cp "$JLdir"/updarp edit/usr/local/bin/updarp
+
+	mount_fs
+	msg_out "Running $CHROOT terminal... \nWhen you are finished, run: exit or simply close the $CHROOT terminal. run 'cat help' or './help' to get help in $CHROOT terminal."
+	if ! $JL_terminal1 -e "$SHELL -c '$CHROOT ./edit ./prepare;HOME=/root LC_ALL=C $CHROOT ./edit;exec $SHELL'" 2>/dev/null; then
 		wrn_out "couldn't run $JL_terminal1, trying $JL_terminal2..."
-		if ! $JL_terminal2 -e "$SHELL -c 'chroot ./edit ./prepare;HOME=/root LC_ALL=C chroot ./edit;exec $SHELL'" 2>/dev/null; then
+		if ! $JL_terminal2 -e "$SHELL -c '$CHROOT ./edit ./prepare;HOME=/root LC_ALL=C $CHROOT ./edit;exec $SHELL'" 2>/dev/null; then
 			wrn_out "failed to run $JL_terminal2. Probably not installed!!"
-			choice1=$(get_yn "Want to continue without chroot (Y/n)?: " $timeout)
+			choice1=$(get_yn "Want to continue without $CHROOT (Y/n)?: " $timeout)
 			if [ "$choice1" = Y ] || [ "$choice1" = y ] ]];then
-			  msg_out "Continuing without chroot. No modification will be done"
+			  msg_out "Continuing without $CHROOT. No modification will be done"
 			else
-			  err_out "counldn't run the chroot terminal, exiting..."
+			  err_out "counldn't run the $CHROOT terminal, exiting..."
 			  exit 2
 			fi
 		fi
 	fi
+
+	msg_out "removing updarp ..."
+	rm edit/usr/local/bin/updarp
 	msg_out 'Restoring access control state'
 	xhost $bxhost && msg_out "xhost restored to initial state."  #leave this variable unquoted
 	##################################Debcache management############################################################
@@ -572,7 +634,6 @@ jlcd_start(){
 	jl_clean
 	###############################Post Cleaning#####################################################################
 	msg_out "Cleaning system"
-	rm -f "$JL_lockF"
 	rm -f edit/prepare
 	rm -f edit/help
 	msg_out "System Cleaned!"
@@ -584,18 +645,43 @@ jlcd_start(){
 	ker="$(get_yn "Rebuild initrd: (y/n)?: " $timeout)"
 	if [ "$ker" = "y" ] || [ "$ker" = "Y" ]; then
 		d=1
+		##################### managing initrd################
+		msg_out "Finding initrd name ..."
+		initrd=$(get_initrd_name "extracted/$JL_casper")
+		if [ "$initrd" = ''  ]; then
+			wrn_out "couldn't dtermine initrd name in: extracted/$JL_casper"
+			initrd="$(get_input "Enter the name of initrd archive: ")"
+		fi
+		msg_out "initrd: $initrd"
+		[ "$initrd" !=  "" ] || err_exit "initrd name can not be empty"
+
+		################# managing vmlinuz ###################
+		msg_out "Finding vmlinuz ..."
+		vmlinuz=$(get_vmlinuz_path "extracted/$JL_casper")
+		if [ "$vmlinuz" = '' ]; then
+			wrn_out "Couldn't find vmlinuz in: extracted/$JL_casper"
+			vmlinuz_name=$(get_input "Enter the name of vmlinuz: ")
+			vmlinuz="extracted/$JL_casper/$vmlinuz_name"
+		fi
+		export vmlinuz_name=$(basename "$vmlinuz")
+		msg_out "vmlinuz: $vmlinuz_name"
+		[ "$vmlinuz_name" != "" ] || err_exit "vmlinuz name can not be empty."
 	fi
 	while [ $d -eq 1 ]
 	do
-	  kerver="$(get_input "Enter the kernel version (take your time on this one) (n to skip): ")"
-	  if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
-		break
-	  fi
-	  vmlinuz_path=edit/boot/vmlinuz-"$kerver"
-	  if [ -f "$vmlinuz_path" ]; then
-		  rebuild_initrd "$initrd" "$kerver"
-		  d=2
-	  fi
+		kerver="$(get_input "Enter the kernel version (take your time on this one) (n to skip, empty to use `uname -r`): ")"
+		if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
+			break
+		elif [ "$kerver" = "" ]; then
+			kerver=$(uname -r)
+		fi
+		vmlinuz_path=edit/boot/vmlinuz-"$kerver"
+		if [ -f "$vmlinuz_path" ]; then
+			rebuild_initrd "$initrd" "$kerver"
+			d=2
+		else
+			err_out "no such kernel version: $kerver"
+		fi
 	done
 	fastcomp=$(get_prop_yn "$JL_fcpn" "$liveconfigfile" "Use fast compression (ISO size may become larger)" "$timeout")
 	update_prop_val "$JL_fcpn" "$fastcomp" "$liveconfigfile" "y: Fast compression, larger image size. n: smaller image but slower"
@@ -610,7 +696,9 @@ jlcd_start(){
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
 	chmod +w extracted/"$JL_casper"/filesystem.manifest 2>/dev/null
-	chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/"$JL_casper"/filesystem.manifest
+	$CHROOT edit dpkg-query -W --showformat='${Package} ${Version}\n' > extracted/"$JL_casper"/filesystem.manifest
+	#no more CHROOT
+	umount_fs
 	cp extracted/"$JL_casper"/filesystem.manifest extracted/"$JL_casper"/filesystem.manifest-desktop
 	sed -i '/ubiquity/d' extracted/"$JL_casper"/filesystem.manifest-desktop
 	sed -i "/"$JL_casper"/d" extracted/"$JL_casper"/filesystem.manifest-desktop

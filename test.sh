@@ -1,3 +1,4 @@
+#!/bin/bash
 msg_out(){
 	printf "\n*** $*\n" > /dev/stdout
 }
@@ -75,4 +76,71 @@ fun(){
 	b=a
 	echo ${!b}
 }
-fun
+
+insert_into_fstab(){
+	if [ "$edit" = "" ]; then
+		err_exit "\$edit can not be empty"
+	fi
+	proc="proc $edit/proc proc defaults 0 0"
+	sys="sysfs $edit/sys sysfs defaults 0 0"
+	devpts="devpts $edit/dev/pts devpts defaults 0 0"
+	#dev="devtmpfs $edit/dev devtmpfs defaults 0 0"
+	arr=("$proc" "$sys" "$devpts")
+	cp /etc/fstab /etc/fstab.bkp
+	for mp in "${arr[@]}"; do
+		echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
+		sed -i.bak -e "$ a $mp" /etc/fstab
+	done
+}
+
+remove_from_fstab(){
+	if [ "$edit" = "" ]; then
+		err_exit "\$edit can not be empty"
+	fi
+	proc="proc $edit/proc proc defaults 0 0"
+	sys="sysfs $edit/sys sysfs defaults 0 0"
+	devpts="devpts $edit/dev/pts devpts defaults 0 0"
+	arr=("$proc" "$sys" "$devpts")
+	cp /etc/fstab /etc/fstab.bkp
+	for mp in "${arr[@]}"; do
+		echo "$(grep -v "$mp" /etc/fstab)" >/etc/fstab
+	done
+}
+
+
+abs_path(){
+    if [ -d "$1" ]; then
+        cd "$1"
+        echo "$(pwd -P)" >/dev/stdout
+    else
+        cd "$(dirname "$1")"
+        echo "$(pwd -P)/$(basename "$1")" >/dev/stdout
+    fi
+}
+
+chk_edit(){
+	if [ "$edit" = "" ]; then
+		err_exit "\$edit can not be empty"
+	fi
+}
+
+mountfs(){
+	mount  proc "$edit"/proc -t proc && echo '*** mounted proc'
+	mount  sysfs "$edit"/sys -t sysfs && echo '*** mounted sysfs'
+	mount  devpts "$edit"/dev/pts -t devpts && echo '*** mounted devpts'
+}
+
+umount_fs(){
+	umount "$edit"/proc || umount -lf "$edit"/proc
+	umount "$edit"/sys
+	umount "$edit"/dev/pts
+}
+
+# edit=edit
+# insert_into_fstab
+# remove_from_fstab
+
+f(){
+	trap 'echo fdkls' EXIT
+}
+f

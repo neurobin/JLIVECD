@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo '*** Preparing chroot...'
-mount -t proc none /proc && echo '*** mounted /proc'
-mount -t sysfs none /sys && echo '*** mounted /sys'
-mount -t devpts none /dev/pts && echo '*** mounted /dev/pts'
+# mount -t proc none /proc && echo '*** mounted /proc'
+# mount -t sysfs none /sys && echo '*** mounted /sys'
+# mount -t devpts none /dev/pts && echo '*** mounted /dev/pts'
 export HOME=/root
 export LC_ALL=C
 dbus-uuidgen > /var/lib/dbus/machine-id

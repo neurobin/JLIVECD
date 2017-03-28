@@ -8,7 +8,12 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 
 # Description:
 
-This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: https://help.ubuntu.com/community/LiveCDCustomization and intended primarily for personal use.
+This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: 
+
+1. https://help.ubuntu.com/community/LiveCDCustomization
+2. https://wiki.debian.org/DebianInstaller/Modify/CD
+
+This tool is intended primarily for personal use.
 
 It gives you a chroot environment for modification and creates the modified iso image. You need to do all the customizations on your own, JLIVECD itself does not do any modifications.
 
@@ -46,18 +51,17 @@ sudo apt-get install xterm
 
 # Installation:
 
-give the `install.sh` file execution permission and run it in terminal.
+run the `install.sh` file in terminal:
 
 ```sh
-chmod +x ./install.sh
-sudo ./install.sh
+sudo bash ./install.sh
 ```
 
 # How to use:
 
 ## For Ubuntu family & Linux Mint
 
-Run `JLstart -ub` in a terminal or run it from `menu->system->JLIVECD`.
+Run `JLstart -ub` in a terminal or run it from `menu->Development->JLIVECD`.
 
 <img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
@@ -80,7 +84,7 @@ Hints are given on the go, follow them to create a customized live cd/dvd.
 
 ## For Debian
 
-Run `JLstart -db` in a terminal or run it from `menu->system->JLIVECD` and follow through.
+Run `JLstart -db` in a terminal or run it from `menu->Development->JLIVECD` and follow through.
 
 ```bash
 ~$ JLstart -db
@@ -115,31 +119,18 @@ In your project directory, you will find some default files/directories. Don't c
 
 # Things to care:
 
-1.Don't use quotation in file/folder path
-
-`~/"some folder"` or `"~/some folder"` is invalid
-
-`~/some folder` is valid
-
-2.Don't use spaces in project path.
-
-3.In a new project, don't close the terminal when it is extracting the original ISO. You can close it safely after it finishes extracting and the chroot is closed and another prompt for input is appeared.
-
-4.Don't close the chroot and host terminal simultaneously. You can close the host terminal safely after an input prompt appears after closing the chroot terminal.
-
-5.The default answer is `no` for all `yes/no` type questions unless specified otherwise.
-
-6.The default answers for `yes/no` type questions are changed according to previous choices for some questions (retain home directory? etc..). For example, if you choose `y` for the question `retain home directory (y/n)?`; next time if you just hit <kbd>Enter</kbd>, it will take `y` instead of `n`. This is project specific i.e each project remembers its own options.
+1. Do not use quotation in file/folder path. `~/"some folder"` or `"~/some folder"` is invalid while `~/some folder` is valid.
+2. Do not use spaces, quotes in project path and do not use ntfs partition.
+3. The default is `no` for all `yes/no` type prompts unless specified otherwise.
 
 # Some Tips & Tricks:
 
 1. If you are not being able to get connected to internet in chroot, you can try running the code: `JLopt -rn` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
-
 2. If you want to change the timeout value then run this code in a terminal in your main system: `JLopt -t timeout_value`. "timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout: `JLopt -t 12`
-
 3. JLIVECD seems to have problem running the `mate-terminal` properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
-
 4. You can change the default terminal JLIVECD uses for chroot. To change the primary default terminal run this code in a terminal in your main system: `JLopt -t1 actual-terminal-command`. To change the secondary default terminal: `JLopt -t2 actual-terminal-command`. For Ex. `JLopt -t1 gnome-terminal`
+5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as input automatically.
+6. You can use full path with or without `.iso`.
 
 # Special Feature:
 
@@ -151,65 +142,10 @@ I call it debcache management!
 4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from Internet.
 5. Alternatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
 
-# ChangeLog:
+# New features:
 
-### version 2.3.1
-
-* Debian support
-* Dynamic cofiguration is possible through configuration file.
-
-### version 2.1.3
-
-1. Consistency among hybrid and UEFI image.
-
-### version 2.1.2:
-
-1. UEFI image support
-2. Hybrid image support
-
-### version 2.1.1:
-
-1. fix `$HOME` and `$LC_ALL` in chroot
-2. chroot preparation is done in the same terminal window as chroot.
-3. Aaccess control management (xhost)
-
-### version 2.1.0:
-
-1. You can change default terminals without applying patch to the source code.
-2. It now remembers several project-wise options (delete home directory?, fast compression?, etc..).
-3. Options are handled with config files both globally and project-wise.
-4. Added show version info (`JLopt -v`)
-5. Added show help menu (`JLopt -h`)
-6. New script `JLopt` contains several useful functionality.
-7. Several potential bug fixes.
-8. Docs updated.
-
-
-### version 2.0.6:
-
-1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
-2. Docs updated.
-
-### version 2.0.5:
-
-1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version >=2.0.4 can be safely updated to any later version.
-2. Added another compression method (fast compression).
-3. Minor potential bug fixes.
-4. Docs updated.
-
-### version 2.0:
-
-1.You can use short cut in names for path to base iso i.e xubuntu for xubuntu-14.04.1-x64.iso, if there is no other file named "xubuntu" in the same folder. You can even use only x if there is no other file starting with x in the same folder.
-
-Example:
-
-```sh
-enter base iso path: ~/Downloads/x
-```
-
-As there is only one file that matches x is xubuntu-14.04.1-x64.iso, it will take that file as input automatically.
-
-2.You can use full path with or without `.iso`.
+* You can close the host and chroot terminal safely any time you want, simultaneous closing is also ok.
+* Possibility of using schroot as chroot program (untested).
 
 # Tested OS:
 

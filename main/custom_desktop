@@ -1,11 +1,10 @@
 #!/bin/bash
 export JLdir=/usr/local/JLIVECD
 cd $JLdir
+set -a
 . ./defconf.sh
 . ./funcs.sh
-
-set -a
-. "$JL_configfile" | true
+. "$JL_configfile" #must be after defconf
 set +a
 
 chkroot
@@ -16,6 +15,9 @@ if [ "$1" = -db ]; then
 	JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
 fi
 
+
+trap_with_arg finish SIGTERM EXIT SIGQUIT
+
 yn="$(cat "$JL_ynF")"
 
 if [ "$yn" = y -o "$yn" = Y ]; then
@@ -23,5 +25,11 @@ if [ "$yn" = y -o "$yn" = Y ]; then
 else
 	JL_fresh=n
 fi
+
+if [ "$CHROOT" = schroot ]; then
+	CHROOT="$CHROOT -c"
+fi
+
+msg_out "chroot command: '$CHROOT'"
 
 jlcd_start ${1+"$@"}

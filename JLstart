@@ -3,16 +3,12 @@ cd "$(dirname "$BASH_SOURCE")"
 
 export JLdir=/usr/local/JLIVECD
 cd $JLdir
+set -a
 . ./defconf.sh
 . ./funcs.sh
-mkdir -p "$JL_logdirtmp"
-
-set -a
-. "$JL_configfile" | true
+. "$JL_configfile"
 set +a
-
-trap finish EXIT
-trap finish SIGTERM
+mkdir -p "$JL_logdirtmp"
 
 help="
 ******** JLstart ********
