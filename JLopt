@@ -100,7 +100,7 @@ case "${opts[$i]}" in
         ;;
     -u|--uninstall)
     	sudo -k rm -rf "$JLdir" "$JL_logdirtmp" 2>/dev/null
-    	sudo rm /usr/bin/jlstart /bin/JLstart /usr/bin/updarp "$JL_lockF" /bin/JLopt /usr/bin/jlopt 2>/dev/null
+    	sudo rm /usr/bin/jlstart /bin/JLstart /usr/bin/updarp "$JL_lockF" /usr/share/applications/JLIVECD.desktop /bin/JLopt /usr/bin/jlopt 2>/dev/null
     	;;
     -h|--help)
         echo "$help"
