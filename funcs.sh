@@ -470,8 +470,8 @@ jlcd_start(){
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
 
-	if [ -f "$JL_lockf" ]; then
-		err_out "another instance of this section is running or premature shutdown detected from a previous runYou need to finish that first or force your way through..."
+	if [ -f "$JL_lockF" ]; then
+		err_out "another instance of this section is running. You need to finish that first. If it's a false positive, give y to force your way through."
 		force=$(get_yn "Force start..(y/n)?: " 10)
 		if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
 			msg_out "Aborted."
@@ -479,6 +479,8 @@ jlcd_start(){
 		fi
 	fi
 	echo "1" > "$JL_lockF"
+	
+	trap_with_arg finish SIGTERM EXIT SIGQUIT
 
 	maindir="$PWD"
 	yn="$JL_fresh"

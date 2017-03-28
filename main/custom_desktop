@@ -16,7 +16,7 @@ if [ "$1" = -db ]; then
 fi
 
 
-trap_with_arg finish SIGTERM EXIT SIGQUIT
+#trap_with_arg finish SIGTERM EXIT SIGQUIT
 
 yn="$(cat "$JL_ynF")"
 
