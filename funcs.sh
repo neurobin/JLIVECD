@@ -334,9 +334,11 @@ remove_fsentry_fstab(){
 		dev="devtmpfs $(fstab_path "${edit}dev") devtmpfs defaults 0 0"
 		arr=("$dev" "$devpts" "$proc" "$sys")
 		for mp in "${arr[@]}"; do
-			local fs=$(echo "$mp" |awk '{print $1}')
-			pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
-			sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $fs for $edit in /etc/fstab"
+			if grep -sqxF "$mp" /etc/fstab; then
+				local fs=$(echo "$mp" |awk '{print $1}')
+				pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
+				sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $fs for $edit in /etc/fstab"
+			fi
 		done
 	else
 		wrn_out "\$edit can not be empty"
