@@ -4,6 +4,7 @@ cd $JLdir
 set -a
 . ./defconf.sh
 . ./funcs.sh
+touch "$JL_configfile"
 . "$JL_configfile" #must be after defconf
 set +a
 

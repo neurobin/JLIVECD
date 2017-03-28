@@ -6,6 +6,7 @@ cd $JLdir
 set -a
 . ./defconf.sh
 . ./funcs.sh
+touch "$JL_configfile"
 . "$JL_configfile"
 set +a
 mkdir -p "$JL_logdirtmp"
