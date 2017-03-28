@@ -1,9 +1,14 @@
+### version 2.3.4
+
+* minor improvement
+* schroot support.
+* Fix locking mechanism
+
 ### version 2.3.2
 
 * better singal handling
 * you can close the host and chroot terminal safely whenever you want.
 * updarp function to update release package and pool
-* schroot support.
 
 ### version 2.3.1
 
