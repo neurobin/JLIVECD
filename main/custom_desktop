@@ -31,5 +31,12 @@ if [ "$CHROOT" = schroot ]; then
 fi
 
 msg_out "chroot command: '$CHROOT'"
+echo
+echo "***********************************************"
+echo "*** default value for (Y/n) prompts is 'n'  ***"
+echo "*** If you just hit enter without giving    ***"
+echo "*** anything to a prompt, it will take your ***"
+echo "*** previous input (if any).                ***"
+echo "***********************************************"
 
 jlcd_start ${1+"$@"}

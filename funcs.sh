@@ -318,7 +318,7 @@ insert_fsentry_fstab(){
 		for mp in "${arr[@]}"; do
 			local fs=$(echo "$mp" |awk '{print $1}')
 			mp=$(echo "$mp" |sed -e 's/\\/\\\\/g')
-			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "added $fs for $edit in /etc/fstab"
+			sed -e "$ a $mp" --in-place=bak /etc/fstab && msg_out "added $fs entry for $edit in /etc/fstab"
 		done
 	else
 		err_exit "\$edit can not be empty"
@@ -337,7 +337,7 @@ remove_fsentry_fstab(){
 			if grep -sqxF "$mp" /etc/fstab; then
 				local fs=$(echo "$mp" |awk '{print $1}')
 				pat="$(echo "$mp" |sed -e 's/[^^]/[&]/g' -e 's/\^/\\^/g')"
-				sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $fs for $edit in /etc/fstab"
+				sed -e "/^$pat$/d" --in-place=bak /etc/fstab && msg_out "removed $fs entry for $edit in /etc/fstab"
 			fi
 		done
 	else
@@ -560,8 +560,6 @@ jlcd_start(){
 		. "$livedir/$JL_sconf"
 	fi
 	set +a
-
-	msg_out "If you just hit enter it will take your previous choice (if any)"
 
 	cdname="$(get_prop_input "$JL_dnpn" "$liveconfigfile" "Enter your desired (customized) cd/dvd name: ")"
 	iso="$(echo "$cdname" |tail -c 5)"
