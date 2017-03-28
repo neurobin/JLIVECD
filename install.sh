@@ -1,7 +1,8 @@
 #!/bin/bash
 cd "$(dirname "$BASH_SOURCE")"
-sudo -sk <<EOF
+sudo -sk bash <<EOF
 mkdir -p /usr/local/JLIVECD
+shopt -s dotglob
 cp -R ./* /usr/local/JLIVECD/
 chmod -R 777 /usr/local/JLIVECD
 chmod 755 /usr/local/JLIVECD/updarp /usr/local/JLIVECD/JLstart /usr/local/JLIVECD/JLopt /usr/local/JLIVECD/main/custom_desktop /usr/local/JLIVECD/main/preparechroot /usr/local/JLIVECD/main/help
