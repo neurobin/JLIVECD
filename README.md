@@ -23,11 +23,11 @@ It gives you a chroot environment for modification and creates the modified iso 
 
 ## Resume capability
 
-It works as project basis. For a JLIVECD project, you need to use your base ISO only once, after that you can keep changing thigs and building and testing ISOs built on those changes.
+It works as project basis. For a JLIVECD project, you need to use your base ISO only once to extract it and deploy the project. After that, you can keep changing thigs and building and testing ISOs built on those changes.
 
 ## Project and Global configuration
 
-It works with both global and local configuration files. Using local project wise config files, you can skip prompts that need answer from user input. Local (project wise) config is prioritized over global config.
+It works with both global and local configuration files. Using local project wise config files, you can skip prompts that need answers from user input. Local (project wise) config is prioritized over global config.
 
 
 # Requirements:
