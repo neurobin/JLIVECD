@@ -147,9 +147,9 @@ I call it debcache management!
 
 By default JLIVECD creates hybrid image. You can either use tools like `unetbootin` or something like `dd` to create the bootable USB. If you want to use `dd`, be careful about mistyping and what you are doing. For example, you could end up wiping your hard disk if you mistype `/dev/sdb` as `/dev/sda`. For this, I have another script ([chibu](https://github.com/neurobin/chibu)) that checks the validity of the usb device and makes sure it's a USB device not something else like a partition on your hard drive. After cheking validity it runs a `dd` command to create the bootable USB.
 
-**Note:** chibu or dd will destory existing data on the USB
+**Note:** **chibu** or **dd** will destory existing data on the USB
 
-With chibu, it's like this:
+With `chibu`, it's like this:
 
 ```bash
 sudo chibu iso_path /dev/sdx
@@ -167,18 +167,18 @@ look for the usb device in the output of the above command.
 
 * USB created with `unetbootin` may not have its boot flag set. Check with `gparted` and set the boot flag if not set.
 * USB created with `unetbootin` may fail to boot with its first default boot option, choose `failsafe` option.
-* If unetbootin doesn't work, try `dd` (preferably [chibu](https://github.com/neurobin/chibu))
+* If `unetbootin` doesn't work, try `dd` (preferably [chibu](https://github.com/neurobin/chibu))
 
 # Tested OS:
 
+* Debian (xfce) testing (stretch) @ Thu Mar 23 13:31:53 UTC 2017
+* Debian (xfce) 8.7.1 Jessie
 * Xubuntu 16.04 LTS
 * Linux Mint 17 cinnamon
 * Linux Mint 17 XFCE
 * Xubuntu 14.04.1 LTS
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
-* Debian (xfce) 8.7.1 Jessie
-* Debian (xfce) testing (stretch) @ Thu Mar 23 13:31:53 UTC 2017
 
 <div id="additional-info"></div>
 
