@@ -23,7 +23,7 @@ It gives you a chroot environment for modification and creates the modified iso 
 
 ## Resume capability
 
-It works as a project basis. For a JLIVECD project, you need to use your base ISO only once, after that you can keep changing thigs and building and testing ISOs built on those changes.
+It works as project basis. For a JLIVECD project, you need to use your base ISO only once, after that you can keep changing thigs and building and testing ISOs built on those changes.
 
 ## Project and Global configuration
 
