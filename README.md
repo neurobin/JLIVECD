@@ -19,13 +19,15 @@ It gives you a chroot environment for modification and creates the modified iso 
 
 <mark>Please read through the <a href="#additional-info">Additional info</a> section before you start with a Ubuntu or Linux Mint ISO for the first time.</mark>
 
-# Features:
+# Mentionables:
 
-1. You can save your project in a suitable directory and keep adding and changing things while checking the ISOs' built on those changes.
-2. Your changes are always saved. You can resume it whenever you like.
-3. It remembers your previous choice (the project directory, the desired ISO name and the original ISO path). Just hit <kbd>Enter</kbd> when you are prompt for input in such cases.
-4. You only need to give it the original ISO once, every time after that, you can just go to the chroot terminal and keep customizing things.
-5. It remembers user choices for various options and prompts both globally and locally (project wise).
+## Resume capability
+
+It works as a project basis. For a JLIVECD project, you need to use your base ISO only once, after that you can keep changing thigs and building and testing ISOs built on those changes.
+
+## Project and Global configuration
+
+It works with both global and local configuration files. Using local project wise config files, you can skip prompts that need answer from user input. Local (project wise) config is prioritized over global config.
 
 
 # Requirements:
@@ -240,4 +242,4 @@ to
 
 ```sh
 sh -c 'sudo ubiquity gtk_ui'
-```
+```y
