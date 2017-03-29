@@ -161,6 +161,12 @@ sudo fdisk -l
 ```
 look for the usb device in the output of the above command.
 
+**Notes:**
+
+* USB created with `unetbootin` may not have its boot flag set. Check with `gparted` and set the boot flag if not set.
+* USB created with `unetbootin` may fail to boot with its first default boot option, choose `failsafe` option.
+* If unetbootin doesn't work, try `dd` (preferably [chibu](https://github.com/neurobin/chibu))
+
 # Tested OS:
 
 * Xubuntu 16.04 LTS
