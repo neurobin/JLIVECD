@@ -732,10 +732,10 @@ jlcd_start(){
 	#check for uefi
 	uefi=$(get_prop_yn "$JL_ufpn" "$liveconfigfile" "Want UEFI image" "$timeout")
 	update_prop_val "$JL_ufpn" "$uefi" "$liveconfigfile" "Whether the image to be built is a UEFI image"
-	#check for hybrid
-	hybrid=$(get_prop_yn "$JL_hbpn" "$liveconfigfile" "Want hybrid image" "$timeout")
-	update_prop_val "$JL_hbpn" "$hybrid" "$liveconfigfile" "Whether the image to be built is a hybrid image."
-	msg_out "FASTCOMPRESSION=$fastcomp\n*** UEFI=$uefi\n*** HYBRID=$hybrid"
+	#check for nhybrid
+	nhybrid=$(get_prop_yn "$JL_hbpn" "$liveconfigfile" "Prevent hybrid image" "$timeout")
+	update_prop_val "$JL_hbpn" "$nhybrid" "$liveconfigfile" "Whether to prevent building hybrid image."
+	msg_out "FASTCOMPRESSION=$fastcomp\n*** UEFI=$uefi\n*** NOHYBRID=$nhybrid"
 	msg_out "Updating some required files..."
 	###############################Create CD/DVD##############################################################################
 	cd "$livedir"
@@ -776,7 +776,7 @@ jlcd_start(){
 		genisoimage -D -r -V "$IMAGE_NAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
 		uefi_opt=
 	fi
-	if [ "$hybrid" = Y ] || [ "$hybrid" = y ]; then
+	if [ "$nhybrid" != Y ] && [ "$nhybrid" != y ]; then
 		isohybrid $uefi_opt ../"$cdname".iso && msg_out "Converted to hybrid image" || wrn_out "Could not convert to hybrid image"
 	fi
 	cd ..

@@ -1,3 +1,7 @@
+### version 2.3.6
+
+* removed HYBRID option and added NOHYBRID option i.e by default, hybrid image will be created.
+
 ### version 2.3.5
 
 * Fixed a bug due to multiple consecutive slash in paths.

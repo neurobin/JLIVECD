@@ -33,7 +33,7 @@ It gives you a chroot environment for modification and creates the modified iso 
 1. bash (This is generally installed by default in most Linux distros)
 2. squashfs-tools
 3. genisoimage
-4. syslinux, syslinux-utils (If you want hybrid ISO image)
+4. syslinux, syslinux-utils (If you want hybrid ISO image (default))
 5. rsync
 6. xterm (optional)
 
@@ -146,6 +146,26 @@ I call it debcache management!
 
 * You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
 * Possibility to use schroot (only for advanced users).
+
+# Creating bootable USB
+
+By default JLIVECD creates hybrid image. You can either use tools like `unetbootin` or something like `dd` to create the bootable USB. If you want to use `dd`, be careful about mistyping and what you are doing. For example, you could end up wiping your hard disk if you mistype `/dev/sdb` as `/dev/sda`. For this, I have another script ([chibu](https://github.com/neurobin/chibu)) that checks the validity of the usb device and makes sure it's a USB device not something else like a partition on your hard drive. After cheking validity it runs a `dd` command to create the bootable USB.
+
+**Note:** chibu or dd will destory existing data on the USB
+
+With chibu, it's like this:
+
+```bash
+sudo chibu iso_path /dev/sdx
+```
+where `/dev/sdx` (not `/dev/sdx1` etc..) is your usb device, (x is a letter)
+
+You can find the device id with:
+
+```bash
+sudo fdisk -l
+```
+look for the usb device in the output of the above command.
 
 # Tested OS:
 

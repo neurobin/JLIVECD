@@ -1,7 +1,7 @@
 #!/bin/bash
 project='JLIVECD'
 description='Live CD/DVD customization tool'
-version='2.3.5'
+version='2.3.6'
 bugurl='https://github.com/neurobin/JLIVECD/issues'
 author='Md. Jahidul Hamid <jahidulhamid@yahoo.com>'
 source='https://github.com/neurobin/JLIVECD'
