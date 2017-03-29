@@ -69,9 +69,6 @@ Example:
 
 ```bash
 ~$ JLstart -ub
-***********************************************
-*** Don't use quotation in file/folder path ***
-***********************************************
 
 === Is this a new project: (y/n)?: n
 
@@ -88,9 +85,6 @@ Run `JLstart -db` in a terminal or run it from `menu->Development->JLIVECD` and 
 
 ```bash
 ~$ JLstart -db
-***********************************************
-*** Don't use quotation in file/folder path ***
-***********************************************
 
 === Is this a new project: (y/n)?: n
 

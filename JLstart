@@ -47,10 +47,6 @@ do
     shift
 done
 
-echo "***********************************************"
-echo "*** Don't use quotation in file/folder path ***"
-echo "***********************************************"
-
 chknorm
 
 #if live_os is not given, then force to select one:
