@@ -1,3 +1,7 @@
+### version 2.3.5
+
+* Fixed a bug due to multiple consecutive slash in paths.
+
 ### version 2.3.4
 
 * minor improvement
