@@ -296,6 +296,15 @@ abs_path(){
     fi
 }
 
+r_trim(){
+    # ^ char in $2 not supported (needs extra care).
+    echo "$1" |sed "s=[$2]*$=="
+}
+
+sanit_path(){
+    echo "$1" |sed -e 's=//*=/=g' -e 's=/$=='
+}
+
 fstab_path(){
 	local path=$1
 	local s=
@@ -326,7 +335,7 @@ insert_fsentry_fstab(){
 }
 
 remove_fsentry_fstab(){
-	local edit=$1
+	local edit="$1"
 	if [ "$edit" != "" ]; then
 		proc="proc $(fstab_path "${edit}proc") proc defaults 0 0"
 		sys="sysfs $(fstab_path "${edit}sys") sysfs defaults 0 0"
@@ -346,6 +355,7 @@ remove_fsentry_fstab(){
 }
 
 mount_fs(){
+    edit=$(sanit_path "$edit")/ #must have / at end
 	if [ "$edit" != "" ]; then
 		insert_fsentry_fstab
 		mount  devtmpfs "${edit}"dev -t devtmpfs && msg_out 'mounted dev'
@@ -359,7 +369,12 @@ mount_fs(){
 
 umount_fs(){
 	livedir=$(cat "$JLIVEdirF")
-	edit=${livedir+$livedir/}edit/
+	if [ "$livedir" = "" ]; then
+	    edit=edit/
+	else
+	    edit="$livedir/edit/"
+	fi
+    edit=$(sanit_path "$edit")/ #must have / at end
 	if mount |awk '{print $3}' |grep -qF "${edit}"proc; then
 		if umount "${edit}"proc || umount -lf "${edit}"proc ; then
 			msg_out "unmount proc success"
@@ -550,12 +565,11 @@ jlcd_start(){
 			err_out "directory doesn't exist: $livedir"
 		fi
 	done
+	livedir=$(sanit_path "$livedir")
 	liveconfigfile="$livedir/.config"
 	touch "$liveconfigfile"
 	chmod 777 "$liveconfigfile"
 	edit=$(abs_path "$livedir/edit")/ #must end with a slash
-	#we got a valid $edit now
-	insert_fsentry_fstab
 
 	set -a
 	if [ -f "$livedir/$JL_sconf"  ]; then
