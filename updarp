@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+pname='updarp'
 dist="stretch"
 arch="amd64"
 extracted="extracted"
@@ -95,7 +96,7 @@ fi
 
 override_url=http://ftp.de.debian.org/debian/indices/override.$override.main.gz
 
-cachedir=updaterp.cache
+cachedir="$pname".cache
 
 mkdir -p "$cachedir"
 
