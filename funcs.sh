@@ -439,12 +439,12 @@ rebuild_initrd(){
     mv edit/"$initrd".old.link edit/"$initrd" &&
     msg_out "edit/$initrd updated." ||
 	wrn_out "Could not update edit/$initrd"
-	if $JL_debian; then
-		#copy isolinux
-		update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		update_cp edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
-		update_cp edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null
-	fi
+	# if $JL_debian; then
+	# 	#copy isolinux
+	# 	update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+	# 	update_cp edit/usr/lib/ISOLINUX/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
+	# 	update_cp edit/usr/lib/isolinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null
+	# fi
 }
 
 jl_clean(){
@@ -494,7 +494,7 @@ jlcd_start(){
 		fi
 	fi
 	echo "1" > "$JL_lockF"
-	
+
 	trap_with_arg finish SIGTERM EXIT SIGQUIT
 
 	maindir="$PWD"
