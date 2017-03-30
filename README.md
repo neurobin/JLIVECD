@@ -27,10 +27,14 @@ It works as project basis. For a JLIVECD project, you need to use your base ISO 
 
 ## Project and Global configuration
 
-It works with both global and local configuration files. Using local project wise config files, you can skip prompts that need answers from user input. Local (project wise) config is prioritized over global config.
+It works with both global and local configuration files. Using config files, you can skip prompts that need answers from user input. Local (project wise) config is prioritized over global config.
+
+Global configuration file: `/usr/local/JLIVECD/.config`
+
+Local configuration file: `config.conf` file in your project directory.
 
 
-# Requirements:
+# Dependencies:
 
 1. bash (This is generally installed by default in most Linux distros)
 2. squashfs-tools
@@ -105,12 +109,12 @@ In your project directory, you will find some default files/directories. Don't c
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
 * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
 * `mnt`: A directory used only for mounting ISO image.
-* `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install source packages and files that you need to store for future but do not want to include them in the ISO.
+* `mydir`: A directory with 777 permission. This directory is moved inside `edit/` during chroot, thus in chroot it will be available as `/mydir`. Use this directory to store/install packages and files that you need to store for future but do not want to include them in the ISO.
 
 **The files are:**
 
-* `.config`: configuration of the corresponding project i.e `DISKNAME` and some other defaults.
-* `config.conf`: Final configuration managed by user. This is essentially a bash script and thus you can make intelligent use of it and set dynamic options. Any non-empty value set to a variable (option) will bypass its input prompt.
+* `.config`: configuration of the corresponding project i.e `DISKNAME` and some other defaults (for internal use)
+* `config.conf`: Configuration managed by user. This is essentially a bash script and thus you can make intelligent use of it and set dynamic options. Any non-empty value set to a variable (option) will bypass its input prompt.
 
 
 # Things to care:

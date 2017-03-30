@@ -6,7 +6,7 @@ cp -R ./* /usr/local/JLIVECD/
 cp -R ./.[^.g]* /usr/local/JLIVECD/
 chmod -R 777 /usr/local/JLIVECD
 cd /usr/local/JLIVECD
-chmod 755 updarp JLstart JLopt main/custom_desktop main/preparechroot main/help funcs.sh install.sh main/JLRefreshNetwork defconf.sh .config
+chmod 755 updarp JLstart JLopt main/custom_desktop main/preparechroot main/help funcs.sh install.sh main/JLRefreshNetwork defconf.sh
 ln -sf /usr/local/JLIVECD/JLstart /bin/JLstart
 ln -sf /usr/local/JLIVECD/JLstart /usr/bin/jlstart
 ln -sf /usr/local/JLIVECD/JLopt /bin/JLopt
