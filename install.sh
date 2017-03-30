@@ -1,11 +1,12 @@
 #!/bin/bash
 cd "$(dirname "$BASH_SOURCE")"
-sudo -sk bash <<EOF
+sudo -s bash <<EOF
 mkdir -p /usr/local/JLIVECD
-shopt -s dotglob
-cp -R ./* /usr/local/JLIVECD
+cp -R ./* /usr/local/JLIVECD/
+cp -R ./.[^.g]* /usr/local/JLIVECD/
 chmod -R 777 /usr/local/JLIVECD
-chmod 755 /usr/local/JLIVECD/updarp /usr/local/JLIVECD/JLstart /usr/local/JLIVECD/JLopt /usr/local/JLIVECD/main/custom_desktop /usr/local/JLIVECD/main/preparechroot /usr/local/JLIVECD/main/help
+cd /usr/local/JLIVECD
+chmod 755 updarp JLstart JLopt main/custom_desktop main/preparechroot main/help funcs.sh install.sh main/JLRefreshNetwork defconf.sh .config
 ln -sf /usr/local/JLIVECD/JLstart /bin/JLstart
 ln -sf /usr/local/JLIVECD/JLstart /usr/bin/jlstart
 ln -sf /usr/local/JLIVECD/JLopt /bin/JLopt
