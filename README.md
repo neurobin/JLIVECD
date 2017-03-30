@@ -132,7 +132,7 @@ In your project directory, you will find some default files/directories. Don't c
 5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as the input.
 6. You can use full path with or without `.iso`.
 
-# Special Feature:
+# Special feature:
 
 I call it debcache management!
 
@@ -146,6 +146,10 @@ I call it debcache management!
 
 * You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
 * Possibility to use schroot (only for advanced users).
+
+# Customization help:
+
+Customization related documents can be found on [JLIVECD github wiki](https://github.com/neurobin/JLIVECD/wiki).
 
 # Creating bootable USB
 
