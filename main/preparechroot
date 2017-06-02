@@ -4,9 +4,13 @@ echo '*** Preparing chroot...'
 export HOME=/root
 export LC_ALL=C
 dbus-uuidgen > /var/lib/dbus/machine-id
-dpkg-divert --local --rename --add /sbin/initctl
+dpkg-divert --local --rename --add /sbin/initctl 2>/dev/null
 ln -s /bin/true /sbin/initctl
-#ln -sf /"$JL_resolvconf" /etc/
+ln -sf /"$JL_resolvconf" /etc/ 2>/dev/null
+mv -f /hosts /etc/hosts
+mv -f /resolv.conf /etc/resolv.conf
+pacman-key --init 2>/dev/null
+pacman-key --populate archlinux 2>/dev/null
 echo '*** Chroot preparation finished'
 echo "
 ***********************************

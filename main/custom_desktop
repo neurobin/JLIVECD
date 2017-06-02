@@ -9,9 +9,13 @@ set +a
 
 chkroot
 
-if [ "$1" = -db ]; then
+if [ "$1" = -al ]; then
+    JL_archlinux=true
+    JL_squashfs="arch/$JL_arch/airootfs.sfs"
+elif [ "$1" = -db ]; then
 	JL_debian=true;
 	JL_casper=live
+    JL_squashfs="$JL_casper"/filesystem.squashfs
 	JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
 fi
 

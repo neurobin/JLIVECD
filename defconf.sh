@@ -1,5 +1,6 @@
 
  JL_debian=false
+ JL_archlinux=false
  JL_fresh=n
  JLIVEisopathF=$JLdir/JLIVEisopath
  JLIVEdirF=$JLdir/JLIVEdir
@@ -16,6 +17,7 @@
  JL_resolvconf=run/resolvconf/resolv.conf #must not start with /
  JL_rhpn=RETAINHOME
  JL_dnpn=DISKNAME
+ JL_inpn=IMAGENAME
  JL_xhpn=XHOST
  JL_fcpn=FASTCOMPRESSION
  JL_ufpn=UEFI
@@ -25,3 +27,5 @@
  JL_t2n=TERMINAL2
  JL_crtn=CHROOT
  CHROOT='chroot ./edit'
+ JL_arch='x86_64'
+ JL_squashfs="$JL_casper"/filesystem.squashfs

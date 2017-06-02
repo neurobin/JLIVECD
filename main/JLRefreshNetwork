@@ -10,5 +10,5 @@ cd "$livedir"
 echo "Preparing network connection for chroot in $livedir..."
 cp /etc/hosts edit/etc/
 rm edit/etc/resolv.conf
-cp -L /etc/resolv.conf edit/etc/
+cp -L /etc/resolv.conf edit/etc/resolv.conf
 echo "Network connection shlould be available in chroot now....."

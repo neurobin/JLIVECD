@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "
+echo " *** Help for debian based distros ***
 **************************************************************
 .............This is the chroot terminal. Use it to modify your live system......
 ..............................Hints..............................
