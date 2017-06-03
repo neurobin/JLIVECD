@@ -32,10 +32,11 @@ fi
 
 echo
 echo "***********************************************"
-echo "*** default value for (Y/n) prompts is 'n'  ***"
+echo "*** Default value for (Y/n) prompts is 'n'  ***"
+echo "*** unless specified otherwise.             ***"
 echo "*** If you just hit enter without giving    ***"
-echo "*** anything to a prompt, it will take your ***"
-echo "*** previous input (if any).                ***"
+echo "*** anything to a prompt, it will take the  ***"
+echo "*** default (previous) value.               ***"
 echo "***********************************************"
 
 jlcd_start ${1+"$@"}

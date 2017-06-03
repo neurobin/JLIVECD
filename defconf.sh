@@ -26,6 +26,9 @@
  JL_t1n=TERMINAL1
  JL_t2n=TERMINAL2
  JL_crtn=CHROOT
+ JL_krpn=KERNEL
+ JL_ripn=REBUILDINITRAMFS
+ JL_mdpn=OSMODE
  CHROOT='chroot ./edit'
  JL_arch='x86_64'
  JL_squashfs="$JL_casper"/filesystem.squashfs

@@ -8,10 +8,11 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 
 # Description:
 
-This is a simple command line tool to customize live cd/dvd of Debian, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: 
+This is a simple command line tool to customize live cd/dvd of Debian, Archlinux, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: 
 
 1. https://help.ubuntu.com/community/LiveCDCustomization
 2. https://wiki.debian.org/DebianInstaller/Modify/CD
+3. https://wiki.archlinux.org/index.php/Remastering_the_Install_ISO
 
 This tool is intended primarily for personal use.
 
@@ -44,16 +45,15 @@ Local configuration file: `config.conf` file in your project directory.
 6. xterm (optional)
 7. dosfstools (archlinux)
 
-Install requirements with the following command:
+Install requirements with the following command in debian like systems:
 
 ```sh
-sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils rsync
+sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils rsync xterm
 ```
+and the following command in Archlinux:
 
-Optionally you can keep `xterm` installed. It will work as a backup terminal in case the default terminal fails to run.
-
-```sh
-sudo apt-get install xterm
+```bash
+sudo pacman -Sy squashfs-tools genisoimage syslinux syslinux-utils rsync xterm dosfstools
 ```
 
 # Installation:
@@ -84,8 +84,6 @@ Example:
 ...............................
 ```
 
-Hints are given on the go, follow them to create a customized live cd/dvd.
-
 ## For Debian
 
 Run `JLstart -db` in a terminal or run it from `menu->Development->JLIVECD` and follow through.
@@ -100,13 +98,29 @@ Run `JLstart -db` in a terminal or run it from `menu->Development->JLIVECD` and 
 ...............................
 ```
 
+## For Archlinux
+
+Run `JLstart -al` in a terminal or run it from `menu->Development->JLIVECD` and follow through.
+
+```bash
+~$ JLstart -al
+
+=== Is this a new project: (y/n)?: n
+
+[sudo] password for user:
+
+...............................
+```
+
+Hints are given on the go, follow them to create a customized live cd/dvd.
+
 # Directories & Files:
 
 In your project directory, you will find some default files/directories. Don't change their names.
 
 **The directories are:**
 
-* `debcache`: `.deb` files are kept here. See the special feature section for more details.
+* `debcache`: `.deb` or `pkg` files are kept here. See the [cache management](#cache-management) section for more details.
 * `edit`: This is the root filesystem (i.e `/`) for the live system (chroot system). Any change you make here will appear in the finalized ISO.
 * `extracted`: This is where the original ISO is extracted. You can change several things here, like Diskname, release, date, splash screen, etc.
 * `mnt`: A directory used only for mounting ISO image.
@@ -133,20 +147,18 @@ In your project directory, you will find some default files/directories. Don't c
 5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as the input.
 6. You can use full path with or without `.iso`.
 
-# Special feature:
+# Cache management
 
-I call it debcache management!
-
-1. Put your `.deb` files in *edit/var/cache/apt/archives* folder and they won't be downloaded again in the software installation process.
+1. Put your `.deb` files in *edit/var/cache/apt/archives* folder (or `pkg` files in *edit/var/cache/pacman/pkg/*) and they won't be downloaded again in the software installation process.
 2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
-3. You never need to delete .deb files from *edit/var/cache/apt/archives* manually and you shouldn't.
-4. If you don't delete the .deb files then you will never need to download them again as long as they remain the updated files according to your package list (which you get from `apt-get update`). debcache management will take proper measures to move the files to required places to minimize downloads of packages from Internet.
-5. Alternatively, you can put the `.deb` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder...
+3. You never need to delete `.deb` or `pkg` files from *edit/var/cache/apt/archives* manually and you shouldn't.
+4. Alternatively, you can put the `.deb` or `pkg` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder.
 
 # New features:
 
 * You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
 * Possibility to use schroot (only for advanced users).
+* Support for Archlinux live ISO.
 
 # Customization help:
 
@@ -188,6 +200,7 @@ look for the usb device in the output of the above command.
 * Xubuntu 14.04.1 LTS
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
+* Archlinux 2017.05.01-x86_64
 
 <div id="additional-info"></div>
 

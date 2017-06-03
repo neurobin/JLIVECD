@@ -300,11 +300,15 @@ update_cp(){
 }
 
 update_mv(){
+    local f="$2"
+    if [ -d "$f" ]; then
+        f="$f/$(basename "$1")"
+    fi
 	if mv -f "$1" "$2"; then
-		msg_out "updated $2"
+		msg_out "updated $f"
 		return 0
 	else
-		wrn_out "failed to update $2"
+		wrn_out "failed to update $f"
 		return 1
 	fi
 }
@@ -460,14 +464,14 @@ rebuild_initrd(){
     local initrd="$1"
     local kerver="$2"
 	local vmlinuz_path=edit/boot/vmlinuz-"$kerver"
-    mv -f edit/"$initrd" edit/"$initrd".old.link
+    mv -f edit/"$initrd" edit/"$initrd".old.link 2>/dev/null
     msg_out "Rebuilding initrd..."
     make_initrd "$initrd" "$kerver"
     update_mv edit/"$initrd" extracted/"$JL_casper"/
 	update_cp "$vmlinuz_path" extracted/"$JL_casper"/"$vmlinuz_name"
-    mv edit/"$initrd".old.link edit/"$initrd" &&
-    msg_out "edit/$initrd updated." ||
-	wrn_out "Could not update edit/$initrd"
+    mv edit/"$initrd".old.link edit/"$initrd" 2>/dev/null # &&
+    # msg_out "edit/$initrd updated." ||
+	# wrn_out "Could not update edit/$initrd"
 	# if $JL_debian; then
 	# 	#copy isolinux
 	# 	update_cp edit/usr/lib/syslinux/isolinux.bin extracted/isolinux/isolinux.bin 2>/dev/null ||
@@ -477,8 +481,8 @@ rebuild_initrd(){
 }
 
 kernel_select_arch(){
-    if [ "$ARCHKERNEL" != '' ]; then
-        echo $ARCHKERNEL
+    if [ "$KERNEL" != '' ]; then
+        echo $KERNEL
         return 0
     fi
     if [ "$1" = '' ]; then
@@ -529,18 +533,18 @@ mk_new_efi(){
 }
 
 rebuild_initramfs(){
-    ARCHKERNEL=$(kernel_select_arch "edit/boot")
-    if [ "$ARCHKERNEL" = '' ]; then
+    KERNEL=$(kernel_select_arch "edit/boot")
+    if [ "$KERNEL" = '' ]; then
         err_out "No kernel found in edit/boot. This means you didn't install any new kernel. Skipping this step..."
         return 1
     fi
     $CHROOT pacman -S archiso --noconfirm --needed
     HOOKS='"base udev memdisk archiso_shutdown archiso archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd archiso_pxe_http archiso_pxe_nfs archiso_kms block pcmcia filesystems keyboard"'
     sed -i.bak "s/HOOKS=\"[^\"]*\"/HOOKS=$HOOKS/" edit/etc/mkinitcpio.conf
-    msg_out "Rebuilding initramfs for kernel: $ARCHKERNEL"
-    $CHROOT mkinitcpio -p $ARCHKERNEL -k $ARCHKERNEL
-    update_cp "edit/boot/vmlinuz-$ARCHKERNEL" "extracted/arch/boot/$JL_arch/vmlinuz"
-    update_cp "edit/boot/initramfs-$ARCHKERNEL.img" "extracted/arch/boot/$JL_arch/archiso.img"
+    msg_out "Rebuilding initramfs for kernel: $KERNEL"
+    $CHROOT mkinitcpio -p $KERNEL -k $KERNEL
+    update_cp "edit/boot/vmlinuz-$KERNEL" "extracted/arch/boot/$JL_arch/vmlinuz"
+    update_cp "edit/boot/initramfs-$KERNEL.img" "extracted/arch/boot/$JL_arch/archiso.img"
     #update efi 
     mount -t vfat -o loop extracted/EFI/archiso/efiboot.img mnt
     update_cp "extracted/arch/boot/$JL_arch/vmlinuz" mnt/EFI/archiso/vmlinuz.efi &&
@@ -695,10 +699,33 @@ jlcd_start(){
 	touch "$liveconfigfile"
 	chmod 777 "$liveconfigfile"
 	edit=$(abs_path "$livedir/edit")/ #must end with a slash
+    
+    # validate mode
+    osmode="$(get_prop_val "$JL_mdpn" "$liveconfigfile" )"
+    if [ "$osmode" != '' ]; then
+        if $JL_archlinux && [ "$osmode" != archlinux ]; then
+            err_exit "$liveconfigfile file says it's not an archlinux compatible project."
+        elif $JL_debian && [ "$osmode" != debian ]; then
+            err_exit "$liveconfigfile file says it's not a debian compatible project."
+        elif [ "$osmode" != ubuntu ]; then
+            err_exit "$liveconfigfile file says it's not an ubuntu compatible project."
+        fi
+    else
+        if $JL_archlinux; then
+            osmode=archlinux;
+        elif $JL_debian; then
+            osmode=debian
+        else
+            osmode=ubuntu
+        fi
+    fi
+    
+    update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode"
+    
     if [ "$IMAGENAME" = '' ]; then
         IMAGENAME="$(get_prop_val $JL_inpn "$liveconfigfile")"
     fi
-    update_prop_val "$JL_inpn" "$IMAGENAME" "$liveconfigfile" "Do not modify if you don't know what you are doing."
+    update_prop_val "$JL_inpn" "$IMAGENAME" "$liveconfigfile" "Do not modify/override it in archlinux mode."
 
 	set -a
 	if [ -f "$livedir/$JL_sconf"  ]; then
@@ -812,7 +839,8 @@ jlcd_start(){
 	d=2
 	ker=""
 	msg_out "##### Init script & Kernel related #####\nRebuild the initramfs if you have \n1. changed init scripts or kernel modules\n2. installed new kernel and want to boot that kernel in the live session."
-	ker="$(get_yn "Rebuild initramfs: (y/n)?: " $timeout)"
+	ker="$(get_prop_yn "$JL_ripn" "$liveconfigfile" "Rebuild initramfs" $timeout)"
+    update_prop_val "$JL_ripn" "$ker" "$liveconfigfile" "Whether to rebuild initrd"
 	if [ "$ker" = "y" ] || [ "$ker" = "Y" ]; then
         if ! $JL_archlinux; then
             d=1
@@ -845,16 +873,17 @@ jlcd_start(){
     
     while [ $d -eq 1 ]
     do
-        kerver="$(get_input "Enter the kernel version (take your time on this one) (n to skip, empty to use `uname -r`): ")"
+        kerver="$(get_prop_input $JL_krpn "$liveconfigfile" "Enter the kernel version (take your time on this one) (n to skip) (default '$(uname -r)'): ")"
         if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
             break
         elif [ "$kerver" = "" ]; then
             kerver=$(uname -r)
         fi
         vmlinuz_path=edit/boot/vmlinuz-"$kerver"
-        if [ -f "$vmlinuz_path" ]; then
+        if [ -d "edit/lib/modules/$kerver" ]; then
             rebuild_initrd "$initrd" "$kerver"
             d=2
+            update_prop_val "$JL_krpn" "$kerver" "$liveconfigfile" "Kernel version (For debian and derivatives)"
         else
             err_out "no such kernel version: $kerver"
         fi
@@ -924,11 +953,11 @@ jlcd_start(){
 	msg_out "Rebuilding squashfs.."
 	if [ "$fastcomp" = Y ] || [ "$fastcomp" = y ];then
 	  msg_out "Using fast compression. Size may become larger"
-	  mksquashfs edit extracted/"$JL_squashfs" -b 1048576 -e edit/boot
+	  mksquashfs edit extracted/"$JL_squashfs" -b 1048576 -e edit/boot || err_exit "mksquashfs failed!"
 	else
 	  msg_out "Using exhaustive compression. Size may become lesser"
-	  #mksquashfs edit extracted/"$JL_squashfs" -comp xz
-	  mksquashfs edit extracted/"$JL_squashfs" -comp xz -e edit/boot
+	  #mksquashfs edit extracted/"$JL_squashfs" -comp xz || err_exit "mksquashfs failed!"
+	  mksquashfs edit extracted/"$JL_squashfs" -comp xz -e edit/boot || err_exit "mksquashfs failed!"
 	fi
     if ! $JL_archlinux; then
         printf $(du -sx --block-size=1 edit | cut -f1) > extracted/"$JL_casper"/filesystem.size
