@@ -42,6 +42,7 @@ Local configuration file: `config.conf` file in your project directory.
 4. syslinux, syslinux-utils (If you want hybrid ISO image (default))
 5. rsync
 6. xterm (optional)
+7. dosfstools (archlinux)
 
 Install requirements with the following command:
 

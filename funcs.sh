@@ -178,6 +178,22 @@ expand_path() {
   esac
 }
 
+get_iso_label(){
+    isoinfo -d -i "$1" |sed -n 's/^[[:blank:]]*volume id:[[:blank:]]*\(.*\)$/\1/ip'
+}
+
+du_size_ex_initramfs(){
+    # $1: path
+    # $2: block size
+    du --block-size=$2 --exclude='archiso.img' --exclude='vmlinuz.efi' -s "$1" 2>/dev/null |sed -n 's/^[[:blank:]]*\([0-9][0-9]*\).*/\1/p'
+}
+
+du_size(){
+    # $1: path
+    # $2: block size
+    du --block-size=$2 -s "$1" 2>/dev/null |sed -n 's/^[[:blank:]]*\([0-9][0-9]*\).*/\1/p'
+}
+
 refresh_network(){
 	if [ -f "$JLIVEdirF" ]; then
 	  	livedir="$(cat "$JLIVEdirF")"
@@ -285,10 +301,10 @@ update_cp(){
 
 update_mv(){
 	if mv -f "$1" "$2"; then
-		msg_out "updated $2/$(basename "$1")"
+		msg_out "updated $2"
 		return 0
 	else
-		wrn_out "failed to update $2/$(basename "$1")"
+		wrn_out "failed to update $2"
 		return 1
 	fi
 }
@@ -460,17 +476,76 @@ rebuild_initrd(){
 	# fi
 }
 
+kernel_select_arch(){
+    if [ "$ARCHKERNEL" != '' ]; then
+        echo $ARCHKERNEL
+        return 0
+    fi
+    if [ "$1" = '' ]; then
+        err_out "First argument missing to kernel_select_arch()"
+        return 1
+    fi
+    array=($(find "$1" -maxdepth 1 -type f -name 'vmlinuz-linux*' -printf '%P\n' |sed 's/^vmlinuz-//'))
+    echo "Select kernel" >>/dev/stderr
+    for((i=0;i<${#array[@]};i++));do
+        echo "$i.       ${array[$i]}" >>/dev/stderr
+    done
+    arri=""
+    while [[ ! "$arri" =~ ^[0-9]+$ ]] || [[ "${array[arri]}" == '' ]];do
+        read -r -p "Enter your choice: " arri
+    done
+    echo "${array[arri]}"
+}
+
+mk_new_efi(){
+    msg_out "Creating new efi boot image ..."
+    bs='1M'
+    olds=$(du_size_ex_initramfs "mnt" $bs)
+    msg_out "Old size excluding initramfs: ${olds}x$bs"
+    vms=$(du_size "extracted/arch/boot/$JL_arch/vmlinuz" $bs)
+    rds=$(du_size "extracted/arch/boot/x86_64/archiso.img" $bs)
+    news=$((olds + vms + rds))
+    msg_out "New size including initramfs: ${news}x$bs"
+    dd if=/dev/zero bs=$bs count=$news of=efiboot-new.img
+    mkfs.fat -n "ARCHISO_EFI" efiboot-new.img
+    umount new 2>/dev/null || umount -lf new 2>/dev/null || rm -r new 2>/dev/null
+    mkdir new
+    mount -t vfat -o loop efiboot-new.img new && msg_out "mounted new efi"
+    cp -r mnt/* new/
+    #rm new/EFI/archiso/vmlinuz.efi new/EFI/archiso/archiso.img
+    update_cp extracted/arch/boot/$JL_arch/vmlinuz new/EFI/archiso/vmlinuz.efi &&
+    update_cp extracted/arch/boot/x86_64/archiso.img new/EFI/archiso/archiso.img &&
+    msg_out "Successfully created new efi image" || {
+    umount new || umount -lf new
+    rm -r new
+    umount mnt || umount -lf mnt
+    err_out "Created a broken efi image"
+    return 1
+    }
+    umount new || umount -lf new
+    rm -r new
+    umount mnt || umount -lf mnt
+    update_mv efiboot-new.img extracted/EFI/archiso/efiboot.img
+}
+
 rebuild_initramfs(){
-    $CHROOT pacman -Syu --force archiso linux
+    ARCHKERNEL=$(kernel_select_arch "edit/boot")
+    if [ "$ARCHKERNEL" = '' ]; then
+        err_out "No kernel found in edit/boot. This means you didn't install any new kernel. Skipping this step..."
+        return 1
+    fi
+    $CHROOT pacman -S archiso --noconfirm --needed
     HOOKS='"base udev memdisk archiso_shutdown archiso archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd archiso_pxe_http archiso_pxe_nfs archiso_kms block pcmcia filesystems keyboard"'
     sed -i.bak "s/HOOKS=\"[^\"]*\"/HOOKS=$HOOKS/" edit/etc/mkinitcpio.conf
-    $CHROOT mkinitcpio -p linux
-    update_cp edit/boot/vmlinuz-linux "extracted/arch/boot/$JL_arch/vmlinuz"
-    update_cp edit/boot/initramfs-linux.img "extracted/arch/boot/$JL_arch/archiso.img"
+    msg_out "Rebuilding initramfs for kernel: $ARCHKERNEL"
+    $CHROOT mkinitcpio -p $ARCHKERNEL -k $ARCHKERNEL
+    update_cp "edit/boot/vmlinuz-$ARCHKERNEL" "extracted/arch/boot/$JL_arch/vmlinuz"
+    update_cp "edit/boot/initramfs-$ARCHKERNEL.img" "extracted/arch/boot/$JL_arch/archiso.img"
     #update efi 
     mount -t vfat -o loop extracted/EFI/archiso/efiboot.img mnt
-    cp extracted/arch/boot/$JL_arch/vmlinuz mnt/EFI/archiso/vmlinuz.efi || exit 1
-    cp extracted/arch/boot/x86_64/archiso.img mnt/EFI/archiso/archiso.img || exit 1
+    update_cp "extracted/arch/boot/$JL_arch/vmlinuz" mnt/EFI/archiso/vmlinuz.efi &&
+    update_cp "extracted/arch/boot/x86_64/archiso.img" mnt/EFI/archiso/archiso.img ||
+    mk_new_efi
 }
 
 jl_clean(){
@@ -486,7 +561,6 @@ jl_clean(){
 	#rm edit/root/.bash_history # it is convenient to not delete it by default. You should clean up in final build manually.
 	rm edit/var/lib/dbus/machine-id
 	rm edit/sbin/initctl
-	msg_out "You have $timeout seconds each to answer the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
 	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
 	if [  "$homec" = Y ] || [ "$homec" = y ]; then
 	  	msg_out "edit/home kept as it is"
@@ -568,7 +642,7 @@ jlcd_start(){
 		c=2
 		cd "$livedir"
 		isopath="$(cat "$JLIVEisopathF")"
-        IMAGENAME="$(isoinfo -d -i "$isopath" |sed -n 's/^[[:blank:]]*volume id:[[:blank:]]*\(.*\)$/\1/ip')"
+        IMAGENAME="$(get_iso_label "$isopath")"
 		if [ -d edit ]; then
 			wrn_out "seems this isn't really a new project (edit directory exists),existing files will be overwritten!!! if you aren't sure what this warning is about, close this terminal and run again. If this is shown again, enter y and continue..."
 			cont=$(get_yn "Are you sure, you want to continue (y/n)?: " $timeout)
@@ -706,9 +780,15 @@ jlcd_start(){
 		xhost - && msg_out "access control enabled"
 	fi
 
+    check_space_changed=false
     if ! $JL_archlinux; then
         msg_out "installing updarp in chroot ..."
         cp "$JLdir"/updarp edit/usr/bin/updarp
+    else
+        if grep -q '^[[:blank:]]*CheckSpace' edit/etc/pacman.conf; then
+            sed -i.bak 's/^[[:blank:]]*CheckSpace/#&/' edit/etc/pacman.conf
+            check_space_changed=true
+        fi
     fi
 
 	mount_fs
@@ -726,40 +806,8 @@ jlcd_start(){
 			fi
 		fi
 	fi
-    if ! $JL_archlinux; then
-        msg_out "removing updarp ..."
-        rm edit/usr/bin/updarp
-    fi
-	msg_out 'Restoring access control state'
-	xhost $bxhost | sed 's/^/\n*** /' && msg_out "xhost restored to initial state."  #leave this variable unquoted
-	##################################Debcache management############################################################
-	msg_out "Cache Management starting. Moving package files to local cache dir"
-	cd "$livedir"
-	if [ ! -d "debcache" ]; then
-	  mkdir debcache
-	fi
-    if $JL_archlinux; then
-        echo dummy123456 > edit/var/cache/pacman/pkg/dummy123456.pkg.tar.xz
-        mv -f edit/var/cache/pacman/pkg/*.xz debcache
-        msg_out "pkg files moved. Cache Management complete!"
-        $CHROOT pacman -Scc --noconfirm #cleaning cache
-    else
-        echo dummy123456 > edit/var/cache/apt/archives/dummy123456.deb
-        mv -f edit/var/cache/apt/archives/*.deb debcache
-        msg_out "deb files moved. Cache Management complete!"
-    fi
-	##################################Cleaning...#########################################
-    if $JL_archlinux; then
-        jl_clean_arch
-    else
-        jl_clean
-    fi
-	###############################Post Cleaning#####################################################################
-	msg_out "Cleaning system"
-	rm -f edit/prepare
-	rm -f edit/help
-	msg_out "System Cleaned!"
 	##############################Checking for new installed kernel############################################################
+	msg_out "\n*** You have $timeout seconds each to answer the following questions.\n*** If not answered, I will take 'n' as default (be ready).\n*** Some default may be different due to previous choice.\n***\n"
 	kerver=0
 	d=2
 	ker=""
@@ -811,7 +859,43 @@ jlcd_start(){
             err_out "no such kernel version: $kerver"
         fi
     done
-        
+    ################################# Changing back some configs #################################################
+    if ! $JL_archlinux; then
+        msg_out "removing updarp ..."
+        rm edit/usr/bin/updarp
+    elif $check_space_changed; then
+        sed -i.bak 's/^##*[[:blank:]]*\(CheckSpace\)/\1/' edit/etc/pacman.conf
+    fi
+	msg_out 'Restoring access control state'
+	xhost $bxhost | sed 's/^/\n*** /' && msg_out "xhost restored to initial state."  #leave this variable unquoted
+	##################################Cache management############################################################
+	msg_out "Cache Management starting. Moving package files to local cache dir"
+	cd "$livedir"
+	if [ ! -d "debcache" ]; then
+	  mkdir debcache
+	fi
+    if $JL_archlinux; then
+        echo dummy123456 > edit/var/cache/pacman/pkg/dummy123456.pkg.tar.xz
+        mv -f edit/var/cache/pacman/pkg/*.xz debcache
+        msg_out "pkg files moved. Cache Management complete!"
+        $CHROOT pacman -Scc --noconfirm #cleaning cache
+    else
+        echo dummy123456 > edit/var/cache/apt/archives/dummy123456.deb
+        mv -f edit/var/cache/apt/archives/*.deb debcache
+        msg_out "deb files moved. Cache Management complete!"
+    fi
+	##################################Cleaning...#########################################
+    if $JL_archlinux; then
+        jl_clean_arch
+    else
+        jl_clean
+    fi
+	###############################Post Cleaning#####################################################################
+	msg_out "Cleaning system"
+	rm -f edit/prepare
+	rm -f edit/help
+	msg_out "System Cleaned!"
+    ############################# Prepare to create CD/DVD####################################################################
 	fastcomp=$(get_prop_yn "$JL_fcpn" "$liveconfigfile" "Use fast compression (ISO size may become larger)" "$timeout")
 	update_prop_val "$JL_fcpn" "$fastcomp" "$liveconfigfile" "y: Fast compression, larger image size. n: smaller image but slower"
 	#check for uefi
@@ -866,10 +950,15 @@ jlcd_start(){
 	msg_out "Creating the image"
     
 	if [ "$uefi" = Y ] || [ "$uefi" = y ];then
-		genisoimage -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot . && msg_out 'Prepared UEFI image'
+        if ! $JL_archlinux; then
+            efi_img=boot/grub/efi.img
+        else
+            efi_img=EFI/archiso/efiboot.img
+        fi
+		genisoimage -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e "$efi_img" -no-emul-boot . && msg_out 'Prepared UEFI image'
 		uefi_opt=--uefi
 	else
-		genisoimage -D -r -V "$IMAGENAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
+		genisoimage -r -V "$IMAGENAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
 		uefi_opt=
 	fi
 	if [ "$nhybrid" != Y ] && [ "$nhybrid" != y ]; then
