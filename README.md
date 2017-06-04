@@ -8,15 +8,18 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 
 # Description:
 
-This is a simple command line tool to customize live cd/dvd of Debian, Archlinux, Ubuntu family, Linux Mint and some of their derivatives. It is developed with the help of the documentation found on: 
-
-1. https://help.ubuntu.com/community/LiveCDCustomization
-2. https://wiki.debian.org/DebianInstaller/Modify/CD
-3. https://wiki.archlinux.org/index.php/Remastering_the_Install_ISO
-
-This tool is intended primarily for personal use.
+This is a simple command line tool to customize live cd/dvd of Debian, Archlinux, Ubuntu family, Linux Mint and some of their derivatives. It dose not require that the host system and the target system be the same, i.e you can modify debian live cd sitting on ubuntu or archlinux, or modify archlinux live cd sitting on ubuntu and so on.
 
 It gives you a chroot environment for modification and creates the modified iso image. You need to do all the customizations on your own, JLIVECD itself does not do any modifications.
+
+> It is developed with the help of the documentation found on: 
+> 
+> 1. https://help.ubuntu.com/community/LiveCDCustomization
+> 2. https://wiki.debian.org/DebianInstaller/Modify/CD
+> 3. https://wiki.archlinux.org/index.php/Remastering_the_Install_ISO
+> 
+> This tool is intended primarily for personal use.
+
 
 <mark>Please read through the <a href="#additional-info">Additional info</a> section before you start with a Ubuntu or Linux Mint ISO for the first time.</mark>
 
