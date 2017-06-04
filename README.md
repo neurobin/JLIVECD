@@ -72,7 +72,7 @@ sudo ./install.sh
 
 Run `JLstart` as root in a terminal or run it from `menu->Development->JLIVECD`.
 
-<img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
+<img alt="JLIVECD menu image" src="https://neurobin.org/projects/softwares/unix/JLIVECD/img/runjlivecd.png"></img>
 
 Example:
 
