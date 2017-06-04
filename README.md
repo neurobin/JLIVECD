@@ -56,7 +56,7 @@ sudo apt-get install squashfs-tools genisoimage syslinux syslinux-utils rsync xt
 and the following command in Archlinux:
 
 ```bash
-sudo pacman -Sy squashfs-tools genisoimage syslinux syslinux-utils rsync xterm dosfstools
+sudo pacman -Sy squashfs-tools cdrkit syslinux rsync xterm dosfstools
 ```
 
 # Installation:
