@@ -227,9 +227,11 @@ fresh_start(){
 			c=1
 			err_out "invalid directory name/path: $livedir"
 		fi
+        chown 1000:1000 "$livedir"
 	done
 	cd "$livedir"
 	[ -d mnt ] && wrn_out "$livedir/mnt Exists, Content will be overwritten" || mkdir mnt
+    chown 1000:1000 mnt
 	while [ $d -eq 1 ]
 	do
 		d=2
@@ -255,9 +257,11 @@ fresh_start(){
 		fi
 	done
 	[ -d extracted ] && wrn_out "$livedir/extracted exists, content will be overwritten" || mkdir extracted
+    chown 1000:1000 extracted
 	rm -f "$JLIVEdirF"
 	echo "$livedir" > "$JLIVEdirF"
 	cp "$JL_sconf_file_d" "$JL_sconf"
+    chown 1000:1000 "$JL_sconf"
 	cd "$maindir"
 }
 
@@ -557,14 +561,14 @@ jl_clean(){
 	cd "$livedir" #exported from jlcd_start
 	rm -f edit/run/synaptic.socket
 	$CHROOT aptitude clean 2>/dev/null
-	$CHROOT dpkg-divert --rename --remove /sbin/initctl 2>/dev/null |sed 's/^/\n*** /'
+	#$CHROOT dpkg-divert --rename --remove /sbin/initctl 2>/dev/null |sed 's/^/\n*** /' #ubuntu 9.10 only
 	if [ -d edit/mydir ]; then
 		mv -f edit/mydir ./
 	fi
 	rm -rf edit/tmp/*
 	#rm edit/root/.bash_history # it is convenient to not delete it by default. You should clean up in final build manually.
-	rm edit/var/lib/dbus/machine-id
-	rm edit/sbin/initctl
+	#rm edit/var/lib/dbus/machine-id #ubuntu 9.10 only
+	#rm edit/sbin/initctl #ubuntu 9.10 only
 	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
 	if [  "$homec" = Y ] || [ "$homec" = y ]; then
 	  	msg_out "edit/home kept as it is"
@@ -582,8 +586,6 @@ jl_clean_arch(){
 		mv -f edit/mydir ./
 	fi
 	rm -rf edit/tmp/*
-	rm edit/var/lib/dbus/machine-id
-	rm edit/sbin/initctl
 	$CHROOT $SHELL -c "LANG=C pacman -Sl | awk '/\[installed\]$/ {print \$1 \"/\" \$2 \"-\" \$3}' > /pkglist.txt"
 	mv edit/pkglist.txt extracted/arch/pkglist.$JL_arch.txt
 	msg_out "You have $timeout seconds each to answer the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
@@ -714,7 +716,7 @@ jlcd_start(){
     fi
     if [ "$osmode" != '' ]; then
         if [ "$live_os" != '' ] && [ "$live_os" != "$osmode" ]; then
-            err_exit "OSMODE in $liveconfigfile file ($osmode) doesn't match with OSMODE passed as argument ($live_os)"
+            err_exit "OSMODE=$osmode in $liveconfigfile file doesn't match with OSMODE passed as argument ($live_os)"
         fi
     elif [ "$live_os" != '' ]; then
         osmode="$live_os"
@@ -729,7 +731,6 @@ jlcd_start(){
     fi
     
     update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode (override not possible)"
-    show_osmode
     
     if [ "$osmode" = archlinux ]; then
         JL_archlinux=true
@@ -742,6 +743,8 @@ jlcd_start(){
     else
         JL_ubuntu=true
     fi
+    
+    show_osmode
     
     if [ "$IMAGENAME" = '' ]; then
         IMAGENAME="$(get_prop_val $JL_inpn "$liveconfigfile")"
@@ -1001,10 +1004,10 @@ jlcd_start(){
         else
             efi_img=EFI/archiso/efiboot.img
         fi
-		genisoimage -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e "$efi_img" -no-emul-boot . && msg_out 'Prepared UEFI image'
+		genisoimage -U -A "$IMAGENAME" -V "$IMAGENAME" -volset "$IMAGENAME" -J -joliet-long -D -r -v -T -o ../"$cdname".iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e "$efi_img" -no-emul-boot . && msg_out 'Prepared UEFI image'
 		uefi_opt=--uefi
 	else
-		genisoimage -r -V "$IMAGENAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
+		genisoimage -D -r -V "$IMAGENAME" -cache-inodes -J -no-emul-boot -boot-load-size 4 -boot-info-table -l -b isolinux/isolinux.bin -c isolinux/boot.cat -o ../"$cdname".iso .
 		uefi_opt=
 	fi
 	if [ "$nhybrid" != Y ] && [ "$nhybrid" != y ]; then

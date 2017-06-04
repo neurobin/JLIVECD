@@ -1,6 +1,7 @@
 ### version 2.4.0
 
 * Archlinux support
+* Fix a bug that was making unbootable iso for kubuntu 14.04.
 
 ### version 2.3.6
 

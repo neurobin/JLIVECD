@@ -3,9 +3,9 @@
 echo '*** Preparing chroot...'
 export HOME=/root
 export LC_ALL=C
-dbus-uuidgen > /var/lib/dbus/machine-id
-dpkg-divert --local --rename --add /sbin/initctl 2>/dev/null
-ln -s /bin/true /sbin/initctl
+#dbus-uuidgen > /var/lib/dbus/machine-id #ubuntu 9.10 only
+#dpkg-divert --local --rename --add /sbin/initctl 2>/dev/null #ubuntu 9.10 only
+#ln -s /bin/true /sbin/initctl #ubuntu 9.10 only
 ln -sf /"$JL_resolvconf" /etc/ 2>/dev/null
 mv -f /hosts /etc/hosts
 mv -f /resolv.conf /etc/resolv.conf
