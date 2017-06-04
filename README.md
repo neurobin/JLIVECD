@@ -61,58 +61,47 @@ sudo pacman -Sy squashfs-tools genisoimage syslinux syslinux-utils rsync xterm d
 run the `install.sh` file in terminal:
 
 ```sh
-sudo bash ./install.sh
+chmod +x ./install.sh
+sudo ./install.sh
 ```
 
 # How to use:
 
-## For Ubuntu family & Linux Mint
-
-Run `JLstart -ub` in a terminal or run it from `menu->Development->JLIVECD`.
+Run `JLstart` as root in a terminal or run it from `menu->Development->JLIVECD`.
 
 <img alt="JLIVECD menu image" src="img/runjlivecd.png"></img>
 
 Example:
 
 ```bash
-~$ JLstart -ub
+~$ sudo JLstart
+[sudo] password for jahid: 
 
-=== Is this a new project: (y/n)?: n
-
-[sudo] password for user:
+=== Is this a new project: (y/n)?: 
 
 ...............................
 ```
+**Hints are given on the go, follow them to successfully create a customized live cd/dvd.**
 
-## For Debian
+> It prompts for osmode (debian, ubuntu or archlinux) for new projects after extracting the iso and saves it in local .config file so that next time it doesn't require you to specify the OS again. Make sure you don't change it in the .config file.
 
-Run `JLstart -db` in a terminal or run it from `menu->Development->JLIVECD` and follow through.
+If you want to run JLIVECD in specific osmode, there's three option for you:
+
+Option | Alt. option | Detail
+------ | ----------- | ------
+`-ub` | `--ubuntu` | Ubuntu mode (for Ubuntu family & Linux Mint)
+`-db` | `--debian` | Debian mode (Debian family)
+`-al` | `--archlinux` | Archlinux mode (Archlinux family)
+
+**Note** If you run JLIVECD in a specific osmode and it doesn't match with what's in .config file, it will throw error and exit.
+
+**Examples of running JLIVECD in specific osmode:**
 
 ```bash
-~$ JLstart -db
-
-=== Is this a new project: (y/n)?: n
-
-[sudo] password for user:
-
-...............................
+sudo JLstart -ub #ubuntu
+sudo JLstart -db #debian
+sudo JLstart -al #archlinux
 ```
-
-## For Archlinux
-
-Run `JLstart -al` in a terminal or run it from `menu->Development->JLIVECD` and follow through.
-
-```bash
-~$ JLstart -al
-
-=== Is this a new project: (y/n)?: n
-
-[sudo] password for user:
-
-...............................
-```
-
-Hints are given on the go, follow them to create a customized live cd/dvd.
 
 # Directories & Files:
 
@@ -136,28 +125,31 @@ In your project directory, you will find some default files/directories. Don't c
 
 1. **Quotation in prompts are taken as literal.** `~/"some folder"` and `"~/some folder"` are different. If you want spaces then give it as it is: `~/some folder`.
 2. **Do not use NTFS partition.**
-3. The default is `no` for all `yes/no` type prompts unless specified otherwise.
+3. The default is `n` for all `y/n` type prompts unless specified otherwise.
 
 # Some Tips & Tricks:
 
-1. If you are not being able to get connected to internet in chroot, you can try running the code: `JLopt -rn` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
+1. If you are not being able to get connected to internet in chroot, you can try running the code: `sudo JLopt -rn` in another terminal in your main system. This may happen if you start JLIVECD before connecting your pc to the internet.
 2. If you want to change the timeout value then run this code in a terminal in your main system: `JLopt -t timeout_value`. "timeout_value" should be replaced with your desired time in seconds. Ex: for 12 seconds timeout: `JLopt -t 12`
 3. JLIVECD seems to have problem running the `mate-terminal` properly. For mate DE, install `xterm` instead ( `sudo apt-get install xterm`).
 4. You can change the default terminal JLIVECD uses for chroot. To change the primary default terminal run this code in a terminal in your main system: `JLopt -t1 actual-terminal-command`. To change the secondary default terminal: `JLopt -t2 actual-terminal-command`. For Ex. `JLopt -t1 gnome-terminal`
-5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is xubuntu-14.04.1-x64.iso, it will take that file as the input.
+5. You don't need to give the full name/path to the base iso prompt: `enter base iso path: ~/Downloads/x`. As there is only one file that matches 'x in my Downloads folder is `xubuntu-14.04.1-x64.iso`, it will take that file as the input.
 6. You can use full path with or without `.iso`.
+
+# Archlinux specific tips
+
+* Do not manually clean pacman cache (`pacman -Scc`). JLIVECD cleans `pacman` cache after backing up the `pkg` files to reduce future downloads.
 
 # Cache management
 
-1. Put your `.deb` files in *edit/var/cache/apt/archives* folder (or `pkg` files in *edit/var/cache/pacman/pkg/*) and they won't be downloaded again in the software installation process.
+1. Put your `.deb` files in *edit/var/cache/apt/archives* folder (or `pkg` files in *edit/var/cache/pacman/pkg/*) so that they don't get downloaded again in the software installation process.
 2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
-3. You never need to delete `.deb` or `pkg` files from *edit/var/cache/apt/archives* manually and you shouldn't.
-4. Alternatively, you can put the `.deb` or `pkg` files in **debcache** folder too, but in that case you need to run the application after you have finished copying files to this folder.
+3. You never need to delete `.deb` or `pkg` files from *edit/var/cache/apt/archives* manually and you shouldn't (not even with package manger cache clean program unless you want it that way for disk space constraint).
+4. Alternatively, you can put the `.deb` or `pkg` files in **debcache** folder too, but in that case you need to run JLIVECD after you have finished copying files to this folder.
+
 
 # New features:
 
-* You can close the host and chroot terminal safely at any stage. Simultaneous closing is also OK.
-* Possibility to use schroot (only for advanced users).
 * Support for Archlinux live ISO.
 
 # Customization help:
@@ -189,18 +181,20 @@ look for the usb device in the output of the above command.
 * USB created with `unetbootin` may not have its boot flag set. Check with `gparted` and set the boot flag if not set.
 * USB created with `unetbootin` may fail to boot with its first default boot option, choose `failsafe` option.
 * If `unetbootin` doesn't work, try `dd` (preferably [chibu](https://github.com/neurobin/chibu))
+* `unetbootin` won't work for archlinux, use `dd` (preferably [chibu](https://github.com/neurobin/chibu)
 
 # Tested OS:
 
 * Debian (xfce) testing (stretch) @ Thu Mar 23 13:31:53 UTC 2017
 * Debian (xfce) 8.7.1 Jessie
+* Archlinux 2017.05.01-x86_64
 * Xubuntu 16.04 LTS
 * Linux Mint 17 cinnamon
 * Linux Mint 17 XFCE
 * Xubuntu 14.04.1 LTS
 * Ubuntu 14.04.1 LTS
 * Ubuntu 14.04.3 LTS
-* Archlinux 2017.05.01-x86_64
+* Kubuntu 14.04.1 LTS
 
 <div id="additional-info"></div>
 
