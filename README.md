@@ -86,9 +86,9 @@ Example:
 ```
 **Hints are given on the go, follow them to successfully create a customized live cd/dvd.**
 
-> It prompts for osmode (debian, ubuntu or archlinux) for new projects after extracting the iso and saves it in project specific .config file so that next time it doesn't require you to specify the OS again. Make sure you don't change it in the .config file.
+> It prompts for OSMODE (debian, ubuntu or archlinux) for new projects after extracting the iso and saves it in project specific .config file so that next time it doesn't require you to specify the OS again. Make sure you don't change it in the .config file.
 
-If you want to run JLIVECD in specific osmode, there's three option for you:
+If you want to run JLIVECD in specific OSMODE, there's three option for you:
 
 Option | Alt. option | Detail
 ------ | ----------- | ------
@@ -96,9 +96,9 @@ Option | Alt. option | Detail
 `-db` | `--debian` | Debian mode (Debian family)
 `-al` | `--archlinux` | Archlinux mode (Archlinux family)
 
-**Note** If you run JLIVECD in a specific osmode and it doesn't match with what's in .config file, it will throw error and exit.
+**Note** If you run JLIVECD in a specific OSMODE and it doesn't match with what's in .config file, it will throw error and exit.
 
-**Examples of running JLIVECD in specific osmode:**
+**Examples of running JLIVECD in specific OSMODE:**
 
 ```bash
 sudo JLstart -ub #ubuntu
