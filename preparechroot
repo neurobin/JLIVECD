@@ -13,8 +13,11 @@ pacman-key --init 2>/dev/null
 pacman-key --populate archlinux 2>/dev/null
 echo '*** Chroot preparation finished'
 echo "
-***********************************
-*** This is the chroot terminal ***
-*** Run './help' to get help    ***
-***********************************
+*****************************************
+*** This is the chroot terminal       ***
+*** Run './help' to get help for      ***
+*** debian/ubuntu based distro        ***
+*** and './help -al' to get archlinux ***
+*** specific help.                    ***
+*****************************************
 "

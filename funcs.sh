@@ -25,8 +25,8 @@ chkroot(){
 
 chknorm(){
 	if [ "$(id -u)" = "0" ]; then
-	  err_out "you need to run this as a normal user, not root."
-	  exit 1
+	  wrn_out "Running as root not recommended. May produce some problems. Better run as a normal user."
+	  return 1
 	fi
 }
 
@@ -213,7 +213,7 @@ refresh_network(){
 }
 
 fresh_start(){
-	chknorm || exit 1
+	#chknorm
 	maindir="$PWD"
 	c=1
 	d=1
@@ -465,7 +465,7 @@ rebuild_initrd(){
     local kerver="$2"
 	local vmlinuz_path=edit/boot/vmlinuz-"$kerver"
     mv -f edit/"$initrd" edit/"$initrd".old.link 2>/dev/null
-    msg_out "Rebuilding initrd..."
+    msg_out "Rebuilding initrd for $kerver ..."
     make_initrd "$initrd" "$kerver"
     update_mv edit/"$initrd" extracted/"$JL_casper"/
 	update_cp "$vmlinuz_path" extracted/"$JL_casper"/"$vmlinuz_name"
@@ -597,10 +597,7 @@ jl_clean_arch(){
 	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 }
 
-jlcd_start(){
-	export livedir=
-	export liveconfigfile=
-	export edit=
+show_osmode(){
     if $JL_archlinux; then
         msg_out "Running in Arch Linux mode"
 	elif $JL_debian; then
@@ -608,6 +605,12 @@ jlcd_start(){
 	else
 		msg_out "Running in Ubuntu mode"
 	fi
+}
+
+jlcd_start(){
+    export livedir=
+    export liveconfigfile=
+    export edit=
 	JL_terminal1=$TERMINAL1
 	JL_terminal2=$TERMINAL2
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
@@ -658,9 +661,9 @@ jlcd_start(){
 			fi
 		fi
 		mount -o loop "$isopath" mnt || wrn_out "failed to mount iso."
-        rsync --exclude=/"$JL_squashfs" -a mnt/ extracted || err_exit "rsync failed"
-        unsquashfs mnt/"$JL_squashfs" || err_exit "unsquashfs failed"
-		mv squashfs-root edit || err_exit "couldn't move squashfs-root."
+        rsync --exclude=/"$JL_squashfs" -a mnt/ extracted || { umount mnt || umount -lf mnt; err_exit "rsync failed"; }
+        unsquashfs -f mnt/"$JL_squashfs" || { umount mnt || umount -lf mnt; err_exit "unsquashfs failed"; }
+		mv -fT squashfs-root edit || { umount mnt || umount -lf mnt; err_exit "couldn't move squashfs-root."; }
 		edit=$(abs_path edit)/ #must end with a slash
 		umount mnt || umount -lf mnt
 	fi
@@ -699,39 +702,51 @@ jlcd_start(){
 	touch "$liveconfigfile"
 	chmod 777 "$liveconfigfile"
 	edit=$(abs_path "$livedir/edit")/ #must end with a slash
-    
-    # validate mode
-    osmode="$(get_prop_val "$JL_mdpn" "$liveconfigfile" )"
-    if [ "$osmode" != '' ]; then
-        if $JL_archlinux && [ "$osmode" != archlinux ]; then
-            err_exit "$liveconfigfile file says it's not an archlinux compatible project."
-        elif $JL_debian && [ "$osmode" != debian ]; then
-            err_exit "$liveconfigfile file says it's not a debian compatible project."
-        elif [ "$osmode" != ubuntu ]; then
-            err_exit "$liveconfigfile file says it's not an ubuntu compatible project."
-        fi
-    else
-        if $JL_archlinux; then
-            osmode=archlinux;
-        elif $JL_debian; then
-            osmode=debian
-        else
-            osmode=ubuntu
-        fi
-    fi
-    
-    update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode"
-    
-    if [ "$IMAGENAME" = '' ]; then
-        IMAGENAME="$(get_prop_val $JL_inpn "$liveconfigfile")"
-    fi
-    update_prop_val "$JL_inpn" "$IMAGENAME" "$liveconfigfile" "Do not modify/override it in archlinux mode."
-
 	set -a
 	if [ -f "$livedir/$JL_sconf"  ]; then
 		. "$livedir/$JL_sconf"
 	fi
 	set +a
+    
+    # validate mode
+    if [ "$yn" != y ]; then
+        osmode="$(get_prop_val "$JL_mdpn" "$liveconfigfile" )"
+    fi
+    if [ "$osmode" != '' ]; then
+        if [ "$live_os" != '' ] && [ "$live_os" != "$osmode" ]; then
+            err_exit "OSMODE in $liveconfigfile file ($osmode) doesn't match with OSMODE passed as argument ($live_os)"
+        fi
+    elif [ "$live_os" != '' ]; then
+        osmode="$live_os"
+    else
+        echo
+        echo "***************** MODE SELECT *****************"
+        echo "* For Ubuntu family & Linux Mint: ubuntu mode *"
+        echo "* For Debian:                     debian mode *"
+        echo "* For archlinux:               archlinux mode *"
+        echo "***********************************************"
+        osmode=$(mode_select)
+    fi
+    
+    update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode (override not possible)"
+    show_osmode
+    
+    if [ "$osmode" = archlinux ]; then
+        JL_archlinux=true
+        JL_squashfs="arch/$JL_arch/airootfs.sfs"
+    elif [ "$osmode" = debian ]; then
+        JL_debian=true;
+        JL_casper=live
+        JL_squashfs="$JL_casper"/filesystem.squashfs
+        JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+    else
+        JL_ubuntu=true
+    fi
+    
+    if [ "$IMAGENAME" = '' ]; then
+        IMAGENAME="$(get_prop_val $JL_inpn "$liveconfigfile")"
+    fi
+    update_prop_val "$JL_inpn" "$IMAGENAME" "$liveconfigfile" "Image label (no override for archlinux)"
 
 	if [ "$CHROOT" = "" ]; then
 		CHROOT='chroot ./edit'
@@ -759,8 +774,8 @@ jlcd_start(){
 	fi
 	update_prop_val "$JL_dnpn" "$cdname" "$liveconfigfile" "ISO image name without .iso"
 	##############################Copy some required files#####################################################################
-	cp main/preparechroot "$livedir"/edit/prepare
-	cp main/help "$livedir"/edit/help
+	cp preparechroot "$livedir"/edit/prepare
+	cp help "$livedir"/edit/help
 	cd "$livedir"
 	msg_out "Entered into directory $livedir"
 	##############################Enable network connection####################################################################
@@ -873,17 +888,19 @@ jlcd_start(){
     
     while [ $d -eq 1 ]
     do
-        kerver="$(get_prop_input $JL_krpn "$liveconfigfile" "Enter the kernel version (take your time on this one) (n to skip) (default '$(uname -r)'): ")"
+        dkerver="$(get_prop_val $JL_krpn "$liveconfigfile")"
+        if [ "$dkerver" = '' ]; then dkerver=$(uname -r); fi
+        kerver="$(get_prop_input $JL_krpn "$liveconfigfile" "Enter the kernel version (take your time on this one) (n to skip) (default '$dkerver'): ")"
         if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
             break
         elif [ "$kerver" = "" ]; then
-            kerver=$(uname -r)
+            kerver="$dkerver"
         fi
         vmlinuz_path=edit/boot/vmlinuz-"$kerver"
         if [ -d "edit/lib/modules/$kerver" ]; then
             rebuild_initrd "$initrd" "$kerver"
             d=2
-            update_prop_val "$JL_krpn" "$kerver" "$liveconfigfile" "Kernel version (For debian and derivatives)"
+            update_prop_val "$JL_krpn" "$kerver" "$liveconfigfile" "Kernel version (For debian, ubuntu and derivatives)"
         else
             err_out "no such kernel version: $kerver"
         fi

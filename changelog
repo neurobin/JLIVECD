@@ -1,1 +1,72 @@
+### version 2.4.0
+
+* Archlinux support
+
+### version 2.3.6
+
+* removed HYBRID option and added NOHYBRID option i.e by default, hybrid image will be created.
+
+### version 2.3.5
+
+* Fixed a bug due to multiple consecutive slash in paths.
+
+### version 2.3.4
+
+* minor improvement
+* schroot support.
+* Fix locking mechanism
+
+### version 2.3.2
+
+* better singal handling
+* you can close the host and chroot terminal safely whenever you want.
+* updarp function to update release package and pool
+
+### version 2.3.1
+
+* Debian support
+* Dynamic cofiguration is possible through configuration file.
+
+### version 2.1.3
+
+1. Consistency among hybrid and UEFI image.
+
+### version 2.1.2:
+
+1. UEFI image support
+2. Hybrid image support
+
+### version 2.1.1:
+
+1. fix `$HOME` and `$LC_ALL` in chroot
+2. chroot preparation is done in the same terminal window as chroot.
+3. Aaccess control management (xhost)
+
+### version 2.1.0:
+
+1. You can change default terminals without applying patch to the source code.
+2. It now remembers several project-wise options (delete home directory?, fast compression?, etc..).
+3. Options are handled with config files both globally and project-wise.
+4. Added show version info (`JLopt -v`)
+5. Added show help menu (`JLopt -h`)
+6. New script `JLopt` contains several useful functionality.
+7. Several potential bug fixes.
+8. Docs updated.
+
+
+### version 2.0.6:
+
+1. `xterm` is added as a secondary terminal besides the default `x-terminal-emulator`.
+2. Docs updated.
+
+### version 2.0.5:
+
+1. New install or update of this tool will not delete the history i.e hitting <kbd>Enter</kbd> to take the previous choice won't be affected. This was first implemented in version 2.0.4, i.e version >=2.0.4 can be safely updated to any later version.
+2. Added another compression method (fast compression).
+3. Minor potential bug fixes.
+4. Docs updated.
+
+### version 2.0:
+
+1.You can use short cut in names for path to base iso i.e xubuntu for xubuntu-14.04.1-x64.iso, if there is no other file named "xubuntu" in the same folder. You can even use only x if there is no other file starting with x in the same folder.
 

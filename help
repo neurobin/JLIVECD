@@ -1,9 +1,11 @@
 #!/bin/bash
-echo " *** Help for debian based distros ***
-**************************************************************
-.............This is the chroot terminal. Use it to modify your live system......
-..............................Hints..............................
-.............Copy your downloaded .deb packages to /var/cache/apt/archives/
+if [ "$1" != -al ] && [ "$1" != --archlinux ]; then
+echo "
+*************** Help for debian/ubuntu based distros ****************
+*********************************************************************
+.....This is the chroot terminal. Use it to modify your live system
+........................Hints..............................
+.....Copy your downloaded .deb packages to /var/cache/apt/archives/
 
 .....................Graphical customization................................
 ...........................................................................
@@ -58,3 +60,11 @@ https://wiki.debian.org/DebianInstaller/Modify/CD
 
 ****************************************************************
 "
+else
+    echo "
+*************** Help for archlinux based distros ****************
+*****************************************************************
+    upgrade:                    pacman -Syu
+    install a package:          pacman -Sy package_name
+"
+fi

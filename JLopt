@@ -23,9 +23,9 @@ JLopt [options]
 -rt2 : factory reset secondary terminal
 -rt  : factory reset all terminals
 -ra  : factory reset all.
--rn  : refresh network. Runs JLRefreshNetwork
+-rn  : refresh network. Runs JLRefreshNetwork (root)
 -t   : set timeout
--u   : uninstall
+-u   : uninstall (root)
 -h   : show help menu.
 "
 
@@ -47,11 +47,11 @@ case "${opts[$i]}" in
     	exit 0;
     	;;
    -rn|--refresh-network)
-       	sudo -k /usr/local/JLIVECD/main/JLRefreshNetwork
+        chkroot
+       	/usr/local/JLIVECD/JLRefreshNetwork
        	continue
        	;;
        -ra|--reset-all)
-       	mkdir -p "$JLdir"
        	echo "" > "$JL_configfile"
        	continue
        	;;
@@ -91,8 +91,9 @@ case "${opts[$i]}" in
     	continue
     	;;
     -u|--uninstall)
-    	sudo -k rm -rf "$JLdir" "$JL_logdirtmp" 2>/dev/null
-    	sudo rm /usr/bin/jlstart /bin/JLstart /usr/bin/updarp "$JL_lockF" /usr/share/applications/JLIVECD.desktop /bin/JLopt /usr/bin/jlopt 2>/dev/null
+        chkroot
+    	rm -rf "$JLdir" "$JL_logdirtmp" 2>/dev/null
+    	rm /usr/bin/jlstart /bin/JLstart /usr/bin/updarp "$JL_lockF" /usr/share/applications/JLIVECD.desktop /bin/JLopt /usr/bin/jlopt 2>/dev/null
     	;;
     -h|--help)
         echo "$help"

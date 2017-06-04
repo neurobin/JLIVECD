@@ -1,6 +1,7 @@
 
  JL_debian=false
  JL_archlinux=false
+ JL_ubuntu=false
  JL_fresh=n
  JLIVEisopathF=$JLdir/JLIVEisopath
  JLIVEdirF=$JLdir/JLIVEdir
@@ -13,7 +14,7 @@
  JL_timeoutd=10
  JL_casper=casper
  JL_logdirtmp="/tmp/.neurobin/JLIVECD"
- JL_ynF="$JL_logdirtmp/yn"
+ #JL_ynF="$JL_logdirtmp/yn"
  JL_resolvconf=run/resolvconf/resolv.conf #must not start with /
  JL_rhpn=RETAINHOME
  JL_dnpn=DISKNAME
