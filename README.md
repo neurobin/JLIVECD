@@ -147,7 +147,7 @@ In your project directory, you will find some default files/directories. Don't c
 
 1. Put your `.deb` files in *edit/var/cache/apt/archives* folder (or `pkg` files in *edit/var/cache/pacman/pkg/*) so that they don't get downloaded again in the software installation process.
 2. They will be moved automatically to a folder named debcache (located in the same directory as "edit") prior to image creation so that they won't be included in the iso image.
-3. You never need to delete `.deb` or `pkg` files from *edit/var/cache/apt/archives* manually and you shouldn't (not even with package manger cache clean program unless you want it that way for disk space constraint).
+3. You never need to delete `.deb` or `pkg` files from *edit/var/cache/apt/archives* manually and you shouldn't (not even with package manager cache clean program unless you want it that way for disk space constraint).
 4. Alternatively, you can put the `.deb` or `pkg` files in **debcache** folder too, but in that case you need to run JLIVECD after you have finished copying files to this folder.
 
 
@@ -184,13 +184,13 @@ look for the usb device in the output of the above command.
 * USB created with `unetbootin` may not have its boot flag set. Check with `gparted` and set the boot flag if not set.
 * USB created with `unetbootin` may fail to boot with its first default boot option, choose `failsafe` option.
 * If `unetbootin` doesn't work, try `dd` (preferably [chibu](https://github.com/neurobin/chibu))
-* `unetbootin` won't work for archlinux, use `dd` (preferably [chibu](https://github.com/neurobin/chibu)
+* `unetbootin` won't work for archlinux, use `dd` (preferably [chibu](https://github.com/neurobin/chibu))
 
 # Tested OS:
 
 * Debian (xfce) testing (stretch) @ Thu Mar 23 13:31:53 UTC 2017
 * Debian (xfce) 8.7.1 Jessie
-* Archlinux 2017.05.01-x86_64
+* Archlinux 2017.05.01 x86_64
 * Xubuntu 16.04 LTS
 * Linux Mint 17 cinnamon
 * Linux Mint 17 XFCE
