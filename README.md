@@ -78,7 +78,7 @@ Example:
 
 ```bash
 ~$ sudo JLstart
-[sudo] password for jahid: 
+[sudo] password for user: 
 
 === Is this a new project: (y/n)?: 
 
