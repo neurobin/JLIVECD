@@ -86,7 +86,7 @@ Example:
 ```
 **Hints are given on the go, follow them to successfully create a customized live cd/dvd.**
 
-> It prompts for osmode (debian, ubuntu or archlinux) for new projects after extracting the iso and saves it in local .config file so that next time it doesn't require you to specify the OS again. Make sure you don't change it in the .config file.
+> It prompts for osmode (debian, ubuntu or archlinux) for new projects after extracting the iso and saves it in project specific .config file so that next time it doesn't require you to specify the OS again. Make sure you don't change it in the .config file.
 
 If you want to run JLIVECD in specific osmode, there's three option for you:
 
