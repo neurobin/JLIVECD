@@ -566,7 +566,6 @@ mk_new_efi(){
     }
     umount new || umount -lf new
     rm -r new
-    umount mnt || umount -lf mnt
     update_mv efiboot-new.img extracted/EFI/archiso/efiboot.img
 }
 
@@ -588,6 +587,7 @@ rebuild_initramfs(){
     update_cp "extracted/arch/boot/$JL_arch/vmlinuz" mnt/EFI/archiso/vmlinuz.efi &&
     update_cp "extracted/arch/boot/x86_64/archiso.img" mnt/EFI/archiso/archiso.img ||
     mk_new_efi
+    umount mnt || umount -lf mnt
 }
 
 jl_clean(){
