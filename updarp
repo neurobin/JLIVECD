@@ -60,8 +60,8 @@ Options:
 "
 
 crpool(){
-	dir=${1-apt.udeb/cache/archives}
-	odir=${2-.}
+	dir="${1-apt.udeb/cache/archives}"
+	odir="${2-.}"
 	find "$dir" -maxdepth 1 -type f -exec sh -c '
 	p=$0
 	odir=$1
