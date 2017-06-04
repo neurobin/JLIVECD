@@ -141,7 +141,7 @@ In your project directory, you will find some default files/directories. Don't c
 
 # Archlinux specific tips
 
-* Do not manually clean pacman cache (`pacman -Scc`). JLIVECD cleans `pacman` cache after backing up the `pkg` files to reduce future downloads.
+* Do not manually clean pacman cache (`pacman -Scc`). JLIVECD cleans `pacman` cache after backing up the `pkg` files to reduce future downloads. If you do clean manually, the `pkg` cache will not be available anymore and you will have to redownload the same packages again when installing/reinstalling next time around.
 
 # Cache management
 
