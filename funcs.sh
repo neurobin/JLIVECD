@@ -176,9 +176,10 @@ get_prop_input(){
 	local bval="${!prop}"
 	local val="$bval"
 	if [ "$bval" = "" ]; then
-		val=$(get_input "$msg" "$timeout")
+        tval="$(get_prop_val "$prop" "$cf")"
+		val=$(get_input "$msg (default '$tval'): " "$timeout")
 		if [ "$val" = "" ]; then
-			val=$(get_prop_val "$prop" "$cf")
+			val="$tval"
 		fi
 	fi
 	echo "$val" >/dev/stdout
@@ -519,24 +520,19 @@ rebuild_initrd(){
 }
 
 kernel_select_arch(){
-    if [ "$KERNEL" != '' ]; then
-        echo $KERNEL
-        return 0
-    fi
-    if [ "$1" = '' ]; then
-        err_out "First argument missing to kernel_select_arch()"
-        return 1
-    fi
-    array=($(find "$1" -maxdepth 1 -type f -name 'vmlinuz-linux*' -printf '%P\n' |sed 's/^vmlinuz-//'))
-    echo "Select kernel" >>/dev/stderr
-    for((i=0;i<${#array[@]};i++));do
-        echo "$i.       ${array[$i]}" >>/dev/stderr
+    local x=1
+    local val=
+    while [ $x -eq 1 ];do
+        val=$(get_prop_input "$JL_krpn" "$liveconfigfile" "Enter kernel (n to skip)")
+        if [ "$val" = n ]; then
+            x=2
+        elif [ -f edit/boot/vmlinuz-"$val" ]; then
+            x=2
+        else
+            err_out "No such kernel: $val. There must be a vmlinuz-$val file in edit/boot/"
+        fi
     done
-    arri=""
-    while [[ ! "$arri" =~ ^[0-9]+$ ]] || [[ "${array[arri]}" == '' ]];do
-        read -r -p "Enter your choice: " arri
-    done
-    echo "${array[arri]}"
+    echo "$val" >/dev/stdout
 }
 
 mk_new_efi(){
@@ -570,11 +566,12 @@ mk_new_efi(){
 }
 
 rebuild_initramfs(){
-    KERNEL=$(kernel_select_arch "edit/boot")
-    if [ "$KERNEL" = '' ]; then
-        err_out "No kernel found in edit/boot. This means you didn't install any new kernel. Skipping this step..."
+    KERNEL=$(kernel_select_arch)
+    if [ "$KERNEL" = '' -o "$KERNEL" = n ]; then
+        wrn_out "Skipping this step..."
         return 1
     fi
+    update_prop_val "$JL_krpn" "$KERNEL" "$liveconfigfile" "Kernel version"
     $CHROOT pacman -S archiso --noconfirm --needed
     HOOKS='"base udev memdisk archiso_shutdown archiso archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd archiso_pxe_http archiso_pxe_nfs archiso_kms block pcmcia filesystems keyboard"'
     sed -i.bak "s/HOOKS=\"[^\"]*\"/HOOKS=$HOOKS/" edit/etc/mkinitcpio.conf
@@ -603,14 +600,6 @@ jl_clean(){
 	#rm edit/root/.bash_history # it is convenient to not delete it by default. You should clean up in final build manually.
 	#rm edit/var/lib/dbus/machine-id #ubuntu 9.10 only
 	#rm edit/sbin/initctl #ubuntu 9.10 only
-	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
-	if [  "$homec" = Y ] || [ "$homec" = y ]; then
-	  	msg_out "edit/home kept as it is"
-	else
-	  	rm -rf edit/home/*
-	  	msg_out "edit/home cleaned!"
-	fi
-	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 }
 
 jl_clean_arch(){
@@ -622,15 +611,6 @@ jl_clean_arch(){
 	rm -rf edit/tmp/*
 	$CHROOT $SHELL -c "LANG=C pacman -Sl | awk '/\[installed\]$/ {print \$1 \"/\" \$2 \"-\" \$3}' > /pkglist.txt"
 	mv edit/pkglist.txt extracted/arch/pkglist.$JL_arch.txt
-	msg_out "You have $timeout seconds each to answer the following questions. if not answered, I will take 'n' as default (be ready). Some default may be different due to previous choice.\n"
-	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
-	if [  "$homec" = Y ] || [ "$homec" = y ]; then
-	  	msg_out "edit/home kept as it is"
-	else
-	  	rm -rf edit/home/*
-	  	msg_out "edit/home cleaned!"
-	fi
-	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
 }
 
 show_osmode(){
@@ -709,13 +689,14 @@ jlcd_start(){
 	do
 		if [ "$yn" != "y" ]; then
 			msg_out "If you just hit enter it will take your previous choice (if any)"
+            if [ -f "$JLIVEdirF" ]; then
+                livedirp="$(cat "$JLIVEdirF")"
+            fi
+            msg_out "previous project path: $livedirp"
 			livedir="$(get_input "Enter the directory path where you have saved your project: ")"
 			livedir="$(expand_path "$livedir")"
 			if [ "$livedir" = "" ]; then
-				if [ -f "$JLIVEdirF" ]; then
-					livedir="$(cat "$JLIVEdirF")"
-					msg_out "previous: $livedir"
-				fi
+                livedir="$livedirp"
 			elif [ -d "$livedir" ]; then
 			  	echo "$livedir" > "$JLIVEdirF"
 			fi
@@ -797,7 +778,7 @@ jlcd_start(){
 
 	msg_out "chroot command: $CHROOT"
 
-	cdname="$(get_prop_input "$JL_dnpn" "$liveconfigfile" "Enter your desired (customized) cd/dvd name: ")"
+	cdname="$(get_prop_input "$JL_dnpn" "$liveconfigfile" "Enter your desired (customized) cd/dvd name")"
 	iso="$(echo "$cdname" |tail -c 5)"
 	iso="$(to_lower "$iso")"
 	if [ "$iso" = ".iso" ]; then
@@ -925,23 +906,32 @@ jlcd_start(){
     
     while [ $d -eq 1 ]
     do
-        dkerver="$(get_prop_val $JL_krpn "$liveconfigfile")"
-        if [ "$dkerver" = '' ]; then dkerver=$(uname -r); fi
-        kerver="$(get_prop_input $JL_krpn "$liveconfigfile" "Enter the kernel version (take your time on this one) (n to skip) (default '$dkerver'): ")"
+        #dkerver="$(get_prop_val $JL_krpn "$liveconfigfile")"
+        #if [ "$dkerver" = '' ]; then dkerver=$(uname -r); fi
+        kerver="$(get_prop_input $JL_krpn "$liveconfigfile" "Enter the kernel version (take your time on this one) (n to skip)")"
         if [ "$kerver" = "n" ] || [ "$kerver" = "N" ]; then
             break
         elif [ "$kerver" = "" ]; then
-            kerver="$dkerver"
+            kerver="$(uname -r)"
         fi
         vmlinuz_path=edit/boot/vmlinuz-"$kerver"
         if [ -d "edit/lib/modules/$kerver" ]; then
             rebuild_initrd "$initrd" "$kerver"
             d=2
-            update_prop_val "$JL_krpn" "$kerver" "$liveconfigfile" "Kernel version (For debian, ubuntu and derivatives)"
+            update_prop_val "$JL_krpn" "$kerver" "$liveconfigfile" "Kernel version"
         else
             err_out "no such kernel version: $kerver"
         fi
     done
+    ############################### Cleaning home ###############################################################
+	homec=$(get_prop_yn "$JL_rhpn" "$liveconfigfile" "Retain home directory" "$timeout")
+	if [  "$homec" = Y ] || [ "$homec" = y ]; then
+	  	msg_out "edit/home kept as it is"
+	else
+	  	rm -rf edit/home/*
+	  	msg_out "edit/home cleaned!"
+	fi
+	update_prop_val "$JL_rhpn" "$homec"  "$liveconfigfile" "Whether to keep users home directory, by default it is deleted."
     ################################# Changing back some configs #################################################
     if ! $JL_archlinux; then
         msg_out "removing updarp ..."
