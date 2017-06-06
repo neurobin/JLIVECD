@@ -676,6 +676,24 @@ jlcd_start(){
 			 	exit 1
 			fi
 		fi
+        echo
+        echo "***************** MODE SELECT *****************"
+        echo "* For Ubuntu family & Linux Mint: ubuntu mode *"
+        echo "* For Debian:                     debian mode *"
+        echo "* For archlinux:               archlinux mode *"
+        echo "***********************************************"
+        osmode=$(mode_select)
+        if [ "$osmode" = archlinux ]; then
+            JL_archlinux=true
+            JL_squashfs="arch/$JL_arch/airootfs.sfs"
+        elif [ "$osmode" = debian ]; then
+            JL_debian=true;
+            JL_casper=live
+            JL_squashfs="$JL_casper"/filesystem.squashfs
+            JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+        else
+            JL_ubuntu=true
+        fi
 		mount -o loop "$isopath" mnt || wrn_out "failed to mount iso."
         rsync --exclude=/"$JL_squashfs" -a mnt/ extracted || { umount mnt || umount -lf mnt; err_exit "rsync failed"; }
         unsquashfs -f mnt/"$JL_squashfs" || { umount mnt || umount -lf mnt; err_exit "unsquashfs failed"; }
