@@ -1,3 +1,9 @@
+### version 2.4.2
+
+* Fix 'mounting iso' problem for new projects
+* Fix running JLstart in generic mode for archlinux
+* improve locking position
+
 ### version 2.4.0
 
 * Archlinux support

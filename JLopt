@@ -35,7 +35,7 @@
 # ##############################################################################
 project='JLIVECD'
 description='Live CD/DVD customization tool'
-version='2.4.1'
+version='2.4.2'
 bugurl='https://github.com/neurobin/JLIVECD/issues'
 author='Md. Jahidul Hamid <jahidulhamid@yahoo.com>'
 source='https://github.com/neurobin/JLIVECD'

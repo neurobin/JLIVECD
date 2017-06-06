@@ -65,6 +65,12 @@ chknorm(){
 }
 
 mode_select(){
+    echo >/dev/stderr
+    echo "***************** MODE SELECT *****************" >/dev/stderr
+    echo "* For Ubuntu family & Linux Mint: ubuntu mode *" >/dev/stderr
+    echo "* For Debian:                     debian mode *" >/dev/stderr
+    echo "* For archlinux:               archlinux mode *" >/dev/stderr
+    echo "***********************************************" >/dev/stderr
 	PS3='Please select a mode (#?): '
 	opts="Ubuntu Debian ArchLinux"
 	select opt in $opts; do #must not double quote
@@ -623,6 +629,20 @@ show_osmode(){
 	fi
 }
 
+update_vars_according_to_osmode(){
+    if [ "$1" = archlinux ]; then
+        JL_archlinux=true
+        JL_squashfs="arch/$JL_arch/airootfs.sfs"
+    elif [ "$1" = debian ]; then
+        JL_debian=true;
+        JL_casper=live
+        JL_squashfs="$JL_casper"/filesystem.squashfs
+        JL_resolvconf=var/run/NetworkManager/resolv.conf #must not start with /
+    else
+        JL_ubuntu=true
+    fi
+}
+
 jlcd_start(){
     export livedir=
     export liveconfigfile=
@@ -631,18 +651,6 @@ jlcd_start(){
 	JL_terminal2=$TERMINAL2
 	command -v "$JL_terminal1" >/dev/null 2>&1 || JL_terminal1='x-terminal-emulator'
 	command -v "$JL_terminal2" >/dev/null 2>&1 || JL_terminal2='xterm'
-
-	if [ -f "$JL_lockF" ]; then
-		err_out "another instance of this section is running. You need to finish that first. If it's a false positive, give y to force your way through."
-		force=$(get_yn "Force start..(y/n)?: " 10)
-		if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
-			msg_out "Aborted."
-			exit 1
-		fi
-	fi
-	echo "1" > "$JL_lockF"
-
-	trap_with_arg finish SIGTERM EXIT SIGQUIT
 
 	maindir="$PWD"
 	yn="$JL_fresh"
@@ -676,13 +684,11 @@ jlcd_start(){
 			 	exit 1
 			fi
 		fi
-        echo
-        echo "***************** MODE SELECT *****************"
-        echo "* For Ubuntu family & Linux Mint: ubuntu mode *"
-        echo "* For Debian:                     debian mode *"
-        echo "* For archlinux:               archlinux mode *"
-        echo "***********************************************"
-        osmode=$(mode_select)
+        if [ "$live_os" = '' ]; then
+            osmode=$(mode_select)
+        else
+            osmode="$live_os"
+        fi
         if [ "$osmode" = archlinux ]; then
             JL_archlinux=true
             JL_squashfs="arch/$JL_arch/airootfs.sfs"
@@ -754,17 +760,10 @@ jlcd_start(){
     elif [ "$live_os" != '' ]; then
         osmode="$live_os"
     else
-        echo
-        echo "***************** MODE SELECT *****************"
-        echo "* For Ubuntu family & Linux Mint: ubuntu mode *"
-        echo "* For Debian:                     debian mode *"
-        echo "* For archlinux:               archlinux mode *"
-        echo "***********************************************"
         osmode=$(mode_select)
     fi
     
     update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode (override not possible)"
-    
     if [ "$osmode" = archlinux ]; then
         JL_archlinux=true
         JL_squashfs="arch/$JL_arch/airootfs.sfs"
@@ -776,7 +775,6 @@ jlcd_start(){
     else
         JL_ubuntu=true
     fi
-    
     show_osmode
     
     if [ "$IMAGENAME" = '' ]; then

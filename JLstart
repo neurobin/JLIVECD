@@ -41,6 +41,17 @@ set -a
 . "$JL_configfile"
 set +a
 chkroot
+trap_with_arg finish SIGTERM EXIT SIGQUIT
+if [ -f "$JL_lockF" ]; then
+    err_out "another instance of JLIVECD is running. You need to finish that first. If it's a false positive, give y to force your way through."
+    force=$(get_yn "Force start..(y/n)?: " 5)
+    if [ "$force" != "y" ] && [ "$force" != "Y" ]; then
+        msg_out "Aborted."
+        exit 1
+    fi
+fi
+echo "1" > "$JL_lockF"
+
 mkdir -p "$JL_logdirtmp"
 
 help="
