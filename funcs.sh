@@ -706,6 +706,7 @@ jlcd_start(){
 		mv -fT squashfs-root edit || { umount mnt || umount -lf mnt; err_exit "couldn't move squashfs-root."; }
 		edit=$(abs_path edit)/ #must end with a slash
 		umount mnt || umount -lf mnt
+        prepare_args="$prepare_args --new"
 	fi
 	cd "$maindir"
 	c=1
@@ -869,9 +870,9 @@ jlcd_start(){
 
 	mount_fs
 	msg_out "Running chroot terminal... \nWhen you are finished, run: exit or simply close the chroot terminal. run 'cat help' or './help' to get help in chroot terminal."
-	if ! $JL_terminal1 -e "$SHELL -c '$CHROOT /prepare;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
+	if ! $JL_terminal1 -e "$SHELL -c '$CHROOT /prepare $prepare_args;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
 		wrn_out "couldn't run $JL_terminal1, trying $JL_terminal2..."
-		if ! $JL_terminal2 -e "$SHELL -c '$CHROOT /prepare;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
+		if ! $JL_terminal2 -e "$SHELL -c '$CHROOT /prepare $prepare_args;HOME=/root LC_ALL=C $CHROOT;exec $SHELL'" 2>/dev/null; then
 			wrn_out "failed to run $JL_terminal2. Probably not installed!!"
 			choice1=$(get_yn "Want to continue without chroot(Y/n)?: " $timeout)
 			if [ "$choice1" = Y ] || [ "$choice1" = y ] ]];then
