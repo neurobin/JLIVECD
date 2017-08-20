@@ -590,6 +590,9 @@ rebuild_initramfs(){
     update_cp "extracted/arch/boot/$JL_arch/vmlinuz" mnt/EFI/archiso/vmlinuz.efi &&
     update_cp "extracted/arch/boot/x86_64/archiso.img" mnt/EFI/archiso/archiso.img ||
     mk_new_efi
+    msg_out "Restoring mkinitcpio.conf and corresponding initramfs"
+    mv -f edit/etc/mkinitcpio.conf.bak edit/etc/mkinitcpio.conf
+    $CHROOT mkinitcpio -p $KERNEL -k $KERNEL
     umount mnt || umount -lf mnt
 }
 
