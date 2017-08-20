@@ -21,7 +21,7 @@ ln -sf /usr/local/JLIVECD/updarp /usr/bin/updarp
 echo "[Desktop Entry]
 Name=JLIVECD
 Type=Application
-Exec='sudo JLstart'
+Exec=sudo JLstart
 Terminal=true
 Icon=/usr/local/JLIVECD/48.png
 Categories=Development;
