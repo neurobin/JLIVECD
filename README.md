@@ -8,7 +8,7 @@ The name and identity elements of a distro are trademarked and copyrighted. Unle
 
 # Description:
 
-This is a simple command line tool to customize live cd/dvd of **Debian**, **Archlinux**, **Ubuntu family**, **Linux Mint** and some of their derivatives. It dose not require that the host system and the target system be the same, i.e you can modify debian live cd sitting on ubuntu or archlinux, or modify archlinux live cd sitting on ubuntu and so on.
+This is a simple command line tool to customize live cd/dvd of **Debian**, **Archlinux**, **Ubuntu family**, **Linux Mint** and some of their derivatives. It does not require that the host system and the target system be the same, i.e you can modify debian live cd sitting on ubuntu or archlinux, or modify archlinux live cd sitting on ubuntu and so on.
 
 It gives you a chroot environment for modification and creates the modified iso image. You need to do all the customizations on your own, JLIVECD itself does not do any modifications.
 
