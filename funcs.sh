@@ -842,7 +842,7 @@ jlcd_start(){
 		mkdir edit/mydir
 	fi
 	chmod 777 edit/mydir
-	msg_out 'use edit/mydir to store files that are not supposed to be included in the resultant livecd. This directory content persisits and thus you can keep source packages and other files here. An octal 777 permission is set for this directory, thus no root privilege required to copy files.'
+	msg_out 'use edit/mydir to store files that are not supposed to be included in the resultant livecd. This directory content persists and thus you can keep source packages and other files here. An octal 777 permission is set for this directory, thus no root privilege required to copy files.'
 	##############################Create chroot environment and prepare it for use#############################################
 	msg_out "Detecting access control state"
 	if xhost | grep 'access control enabled' >/dev/null; then

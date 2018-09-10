@@ -65,6 +65,6 @@ else
 *************** Help for archlinux based distros ****************
 *****************************************************************
     upgrade:                    pacman -Syu
-    install a package:          pacman -Sy package_name
+    install a package:          pacman -S package_name
 "
 fi
