@@ -80,6 +80,14 @@ Example:
 ~$ sudo JLstart
 [sudo] password for user: 
 
+**************** JLIVECD******************
+*Tips:
+*   1. Paths must be absolute. (~ allowed)
+*   2. Inputs are literal
+*   3. Do not use NTFS partition
+******************************************
+
+
 === Is this a new project: (y/n)?: 
 
 ...............................
