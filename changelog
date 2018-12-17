@@ -1,3 +1,7 @@
+### version 2.4.5
+
+* Add clarification about absolute paths in docs
+
 ### version 2.4.2
 
 * Fix 'mounting iso' problem for new projects

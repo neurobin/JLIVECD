@@ -126,9 +126,10 @@ In your project directory, you will find some default files/directories. Don't c
 
 # Things to care:
 
-1. **Quotation in prompts are taken as literal.** `~/"some folder"` and `"~/some folder"` are different. If you want spaces then give it as it is: `~/some folder`.
-2. **Do not use NTFS partition.**
-3. The default is `n` for all `y/n` type prompts unless specified otherwise.
+1. Paths must be absolute. JLIVECD **does not** run in the current directory. `~` is respected.
+2. **Quotation in prompts are taken as literal.** `~/"some folder"` and `"~/some folder"` are different. If you want spaces then give it as it is: `~/some folder`.
+3. **Do not use NTFS partition.**
+4. The default is `n` for all `y/n` type prompts unless specified otherwise.
 
 # Some Tips & Tricks:
 
