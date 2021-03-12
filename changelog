@@ -1,3 +1,7 @@
+### version 2.4.6
+
+* Change default user 1000 to SUDO_USER
+
 ### version 2.4.5
 
 * Add clarification about absolute paths in docs
