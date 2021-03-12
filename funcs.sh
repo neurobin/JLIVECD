@@ -2,24 +2,24 @@
 # ############################### JLIVECD ######################################
 # ##############################################################################
 #            Copyright (c) 2015-2017 Md. Jahidul Hamid
-# 
+#
 # -----------------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
-# 
+#
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-# 
-#     * The names of its contributors may not be used to endorse or promote 
+#
+#     * The names of its contributors may not be used to endorse or promote
 #       products derived from this software without specific prior written
 #       permission.
-#       
+#
 # Disclaimer:
-# 
+#
 #     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 #     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 #     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -255,6 +255,9 @@ refresh_network(){
 
 fresh_start(){
 	#chknorm
+	if [[ "$SUDO_USER" = '' ]]; then
+		err_exit "Please run with sudo. We need SUDO_USER environment variable."
+	fi
 	maindir="$PWD"
 	c=1
 	d=1
@@ -268,11 +271,11 @@ fresh_start(){
 			c=1
 			err_out "invalid directory name/path: $livedir"
 		fi
-        chown 1000:1000 "$livedir"
+        chown $SUDO_USER:$SUDO_USER "$livedir"
 	done
 	cd "$livedir"
 	[ -d mnt ] && wrn_out "$livedir/mnt Exists, Content will be overwritten" || mkdir mnt
-    chown 1000:1000 mnt
+    chown $SUDO_USER:$SUDO_USER mnt
 	while [ $d -eq 1 ]
 	do
 		d=2
@@ -298,11 +301,11 @@ fresh_start(){
 		fi
 	done
 	[ -d extracted ] && wrn_out "$livedir/extracted exists, content will be overwritten" || mkdir extracted
-    chown 1000:1000 extracted
+    chown $SUDO_USER:$SUDO_USER extracted
 	rm -f "$JLIVEdirF"
 	echo "$livedir" > "$JLIVEdirF"
 	cp "$JL_sconf_file_d" "$JL_sconf"
-    chown 1000:1000 "$JL_sconf"
+    chown $SUDO_USER:$SUDO_USER "$JL_sconf"
 	cd "$maindir"
 }
 
@@ -585,7 +588,7 @@ rebuild_initramfs(){
     $CHROOT mkinitcpio -p $KERNEL -k $KERNEL
     update_cp "edit/boot/vmlinuz-$KERNEL" "extracted/arch/boot/$JL_arch/vmlinuz"
     update_cp "edit/boot/initramfs-$KERNEL.img" "extracted/arch/boot/$JL_arch/archiso.img"
-    #update efi 
+    #update efi
     mount -t vfat -o loop extracted/EFI/archiso/efiboot.img mnt
     update_cp "extracted/arch/boot/$JL_arch/vmlinuz" mnt/EFI/archiso/vmlinuz.efi &&
     update_cp "extracted/arch/boot/x86_64/archiso.img" mnt/EFI/archiso/archiso.img ||
@@ -752,7 +755,7 @@ jlcd_start(){
 		. "$livedir/$JL_sconf"
 	fi
 	set +a
-    
+
     # validate mode
     if [ "$yn" != y ]; then
         osmode="$(get_prop_val "$JL_mdpn" "$liveconfigfile" )"
@@ -766,7 +769,7 @@ jlcd_start(){
     else
         osmode=$(mode_select)
     fi
-    
+
     update_prop_val "$JL_mdpn" "$osmode" "$liveconfigfile" "operating mode (override not possible)"
     if [ "$osmode" = archlinux ]; then
         JL_archlinux=true
@@ -780,7 +783,7 @@ jlcd_start(){
         JL_ubuntu=true
     fi
     show_osmode
-    
+
     if [ "$IMAGENAME" = '' ]; then
         IMAGENAME="$(get_prop_val $JL_inpn "$liveconfigfile")"
     fi
@@ -923,7 +926,7 @@ jlcd_start(){
             d=2
         fi
 	fi
-    
+
     while [ $d -eq 1 ]
     do
         #dkerver="$(get_prop_val $JL_krpn "$liveconfigfile")"
@@ -1041,7 +1044,7 @@ jlcd_start(){
         md5sum "$JL_squashfs" > "$(dirname "$JL_squashfs")/airootfs.md5"
     fi
 	msg_out "Creating the image"
-    
+
 	if [ "$uefi" = Y ] || [ "$uefi" = y ];then
         if ! $JL_archlinux; then
             efi_img=boot/grub/efi.img
